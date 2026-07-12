@@ -50,13 +50,19 @@ export function SheetHost({ children }: { children: ReactNode }) {
   }, []);
   const closeAll = useCallback(() => setStack([]), []);
 
-  const top = stack[stack.length - 1];
-
   return (
     <SheetContext.Provider value={{ push, pop, replace, closeAll }}>
       {children}
       <Sheet open={stack.length > 0} onClose={pop}>
-        {top?.content}
+        {/* Every stacked entry stays mounted (only display:none'd when not
+            on top) so state and timers in a lower sheet (e.g. a routine
+            draft, or a running workout timer) survive a nested push/pop
+            like opening the exercise picker on top of it. */}
+        {stack.map((entry, i) => (
+          <div key={entry.key} hidden={i !== stack.length - 1}>
+            {entry.content}
+          </div>
+        ))}
       </Sheet>
     </SheetContext.Provider>
   );

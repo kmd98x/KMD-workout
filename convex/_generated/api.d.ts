@@ -9,7 +9,13 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as exercises from "../exercises.js";
 import type * as http from "../http.js";
+import type * as lib_auth from "../lib/auth.js";
+import type * as logging from "../logging.js";
+import type * as progress from "../progress.js";
+import type * as stats from "../stats.js";
+import type * as workout from "../workout.js";
 
 import type {
   ApiFromModules,
@@ -19,7 +25,13 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  exercises: typeof exercises;
   http: typeof http;
+  "lib/auth": typeof lib_auth;
+  logging: typeof logging;
+  progress: typeof progress;
+  stats: typeof stats;
+  workout: typeof workout;
 }>;
 
 /**

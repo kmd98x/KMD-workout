@@ -1,0 +1,129 @@
+"use client";
+
+import { useAuthActions } from "@convex-dev/auth/react";
+import { usePreloadedQuery, useQuery, type Preloaded } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { ActiveCardioScreen } from "@/features/logging/components/ActiveCardioScreen";
+import { ActiveStrengthScreen } from "@/features/logging/components/ActiveStrengthScreen";
+import { startOfWeek } from "@/shared/lib/date";
+import { useSheet } from "@/shared/ui/SheetHost";
+import { FolderEditorSheet } from "../editors/FolderEditorSheet";
+import { RoutineEditorSheet } from "../editors/RoutineEditorSheet";
+import { FolderRow } from "./FolderRow";
+import { GreetingHeader } from "./GreetingHeader";
+import { LogCardioButton } from "./LogCardioButton";
+import { QuickStartButton } from "./QuickStartButton";
+import { RoutineCard } from "./RoutineCard";
+
+export function WorkoutHome({
+  preloaded,
+}: {
+  preloaded: Preloaded<typeof api.workout.listFoldersAndRoutines>;
+}) {
+  const data = usePreloadedQuery(preloaded);
+  const weekSummary = useQuery(api.logging.getThisWeekSummary, {
+    weekStartTs: startOfWeek().getTime(),
+  });
+  const { push } = useSheet();
+  const { signOut } = useAuthActions();
+
+  const folderIds = new Set(data.folders.map((f) => f._id));
+  const ungrouped = data.routines.filter(
+    (r) => !r.folderId || !folderIds.has(r.folderId)
+  );
+
+  return (
+    <div className="pt-2">
+      <div className="flex items-baseline justify-between pt-[26px] pb-[18px]">
+        <div className="text-[26px] font-extrabold tracking-tight">
+          <span className="text-blue">Steady</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => void signOut()}
+          className="rounded-lg bg-surface-2 px-3 py-2 text-[13px] font-semibold text-muted hover:text-ink"
+        >
+          Sign out
+        </button>
+      </div>
+
+      <div className="lg:grid lg:grid-cols-[360px_1fr] lg:items-start lg:gap-6 xl:grid-cols-[380px_1fr]">
+        <div>
+          <GreetingHeader
+            sessionsThisWeek={weekSummary?.count ?? 0}
+            doneDays={new Set(weekSummary?.days ?? [])}
+          />
+          <div className="mt-2 grid grid-cols-2 gap-3">
+            <QuickStartButton
+              onClick={() =>
+                push(
+                  "active-strength",
+                  <ActiveStrengthScreen initialExercises={[]} />
+                )
+              }
+            />
+            <LogCardioButton
+              onClick={() => push("active-cardio", <ActiveCardioScreen />)}
+            />
+          </div>
+        </div>
+
+        <div>
+          <div className="mt-6 mb-3 flex items-center justify-between lg:mt-0">
+            <span className="text-[12.5px] font-bold uppercase tracking-wide text-muted">
+              Routines
+            </span>
+            <button
+              type="button"
+              onClick={() => push("folder-editor", <FolderEditorSheet />)}
+              className="px-1 py-0.5 text-[12.5px] font-bold text-blue"
+            >
+              + New folder
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => push("routine-editor", <RoutineEditorSheet />)}
+            className="mb-3 w-full rounded-card border-[1.6px] border-dashed border-line py-4 text-center text-[14.5px] font-bold text-blue"
+          >
+            + New routine
+          </button>
+
+          {data.folders.map((f) => (
+            <FolderRow
+              key={f._id}
+              folder={f}
+              routines={data.routines.filter((r) => r.folderId === f._id)}
+            />
+          ))}
+
+          {data.routines.length === 0 && data.folders.length === 0 ? (
+            <div className="pt-1.5 text-center text-[14px] text-muted-2">
+              <span className="mb-1.5 block text-lg font-bold text-muted">
+                No routines yet.
+              </span>
+              Build a fixed workout — give it a name and start it each week
+              with one tap. Group them into folders if you like.
+            </div>
+          ) : (
+            ungrouped.length > 0 && (
+              <>
+                {data.folders.length > 0 && (
+                  <div className="mb-3 border-t border-line pt-4 text-[12.5px] font-bold uppercase tracking-wide text-muted">
+                    My routines
+                  </div>
+                )}
+                <div className="lg:grid lg:grid-cols-2 lg:gap-3">
+                  {ungrouped.map((r) => (
+                    <RoutineCard key={r._id} routine={r} />
+                  ))}
+                </div>
+              </>
+            )
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
