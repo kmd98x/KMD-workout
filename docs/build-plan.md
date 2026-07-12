@@ -41,7 +41,7 @@ app/
   sessions/[id]/page.tsx      ✅ (+ loading.tsx)
   exercises/[name]/page.tsx   ✅ M3 (+ loading.tsx)
   progress/page.tsx           ✅ M4 (no loading.tsx — plain client component, no server await to suspend on)
-  stats/page.tsx               ⬜ placeholder only, real build in M5
+  stats/page.tsx               ✅ M5 (no loading.tsx — same rationale as /progress)
 proxy.ts                     ✅ route protection (repo root, NOT inside app/)
 
 features/
@@ -70,7 +70,8 @@ features/
     hooks/ useExerciseHistory.ts                          ✅ M3
   progress/  components/ ProgressScreen, RhythmChart,
              StrengthPerExerciseChart, SessionHistoryList  ✅ M4
-  stats/     components/ (WeekNav, SetsTab, BodyTab, TrendsTab, TargetEditDialog, RadarChart)  ⬜ M5
+  stats/     components/ StatsScreen, WeekNav, SetsTab, BodyTab,
+             TrendsTab, TargetEditDialog                          ✅ M5
 
 shared/
   ui/ Sheet, SheetHeader, SheetHost (stack, fixed),
@@ -78,7 +79,7 @@ shared/
       SetBlock, SetTable, icons.tsx (incl. StrengthIcon/
       CardioIcon, moved here from their button components
       in M4 so SessionHistoryList could reuse them too)    ✅
-  charts/ LineChart ✅ M3, BarChart ✅ M4, RadarChart ⬜ M5
+  charts/ LineChart ✅ M3, BarChart ✅ M4, RadarChart ✅ M5
   lib/ date.ts (week boundaries, greeting, formatDuration,
        formatDate, formatFullDate)                          ✅
        epley.ts (1RM estimate)                              ✅ M3
@@ -99,7 +100,9 @@ convex/
                               listRecentSessions (paginated, M4), getTotalSessionsCount (M4)
   progress.ts                 ✅ M4: weeklyRhythm (6-week bounded range query),
                               strengthPerExercise (reuses scanExerciseHistory)
-  stats.ts                   ⬜ M5: getWeekSets, getWeekMuscleLoad, getWeekTrends, getTargets, setTarget
+  stats.ts                    ✅ M5: getWeekSets, getWeekMuscleLoad, getWeekTrends (one
+                              14-day bounded range query split in JS into current/previous,
+                              mirroring weeklyRhythm's pattern), getTargets, setTarget
 ```
 
 ### `convex/schema.ts` (built, all of it — nothing pending here)
@@ -170,13 +173,17 @@ convex/
 
 **Verified for M4**: `tsc --noEmit` clean, `npx convex dev --once` clean, `npx convex run` sanity checks (`getTotalSessionsCount`, `listRecentSessions`, `weeklyRhythm`, `strengthPerExercise` all degrade gracefully unauthenticated), curl smoke test on `/progress` (307→`/login`, no 500). Browser click-through (same scratch-Playwright approach as M3): signed up a fresh account, logged two Bench Press sessions (70kg→80kg) plus one Running cardio session, then confirmed on `/progress` — correct stat tiles (2/2), rhythm bar chart with the current week correctly highlighted and labeled, the strength-per-exercise line chart showing both points with an "80 kg" end label, and the history list showing a blue dumbbell badge on the strength row vs. an orange heart-rate badge on the cardio row (checked via a cropped screenshot after an initial full-page shot made the two look identical due to the fixed bottom-nav duplicating in a full-page capture — not a real bug, just a screenshot artifact). Zero console errors.
 
-### M5 — Statistics tab ⬜
-- [ ] `convex/stats.ts`: `getWeekSets`, `getWeekMuscleLoad` (both: one week-bounded scan + `aggregateLoad`), `getWeekTrends` (this vs last week: workouts/duration/volume/sets + 6-axis broad-group data), `getTargets`, `setTarget` (upsert one `{group,min,max}` row).
-- [ ] `shared/charts/RadarChart.tsx`.
-- [ ] `/stats` page, 3 sub-tabs with week nav (prev/next, clamped to current week):
-  - **Sets**: total sets/reps tiles, per-broad-group cards (9 groups, fixed order) with status pill (Under/On track/Over), progress bar, "Edit target" dialog.
-  - **Body**: `BodyMap` in `"load"` mode (week-scoped) + flat list of all 19 fine-grained muscles' set counts.
-  - **Trends**: radar chart (current vs previous week, 6 axes: Back/Chest/Core/Shoulders/Legs/Arms) + 4 trend tiles (Workouts/Duration/Volume/Sets) with up/down arrows.
+### M5 — Statistics tab ✅ DONE
+- [x] `convex/stats.ts`: `getWeekSets`, `getWeekMuscleLoad` (both call a shared `computeWeekLoad` helper over one week-bounded `by_user_ts` range query), `getWeekTrends` (one 14-day bounded range query, split in JS into current/previous — same single-range-query pattern as `progress.ts`'s `weeklyRhythm`), `getTargets`, `setTarget` (upsert one `{group,min,max}` row, clamps `min<=max` server-side too). Also queries `customExercises` per-call (small, `by_user`-indexed) to build the `exInfo` custom-exercise fallback, same as the client-side `MusclePanel` usage elsewhere.
+- [x] `shared/charts/RadarChart.tsx` (dataviz skill invoked first, since this is a new chart *type*, unlike M4's BarChart which reused M3's LineChart pass directly): 2-series comparison (current/previous), so unlike the single-series LineChart/BarChart this always ships a legend — current in the app's existing accent blue, previous in its existing recessive muted-gray (the same pair BarChart already reserves for "highlighted vs rest", chosen instead of introducing a new color so all 3 charts keep reading as one system). Hairline grid rings + spokes, 2px stroke, 2px surface-ring vertex dots, and a per-axis tap/hover tooltip (this is a plot, not a bare stat tile, so per the skill it gets the same interaction layer LineChart has).
+- [x] `/stats` page (`StatsScreen.tsx`), 3 sub-tabs via the existing `Chip` component (same segmented-tab pattern as `ExerciseDetailTabs`/`RoutineTrendChart`, not a new one):
+  - **Sets** (`SetsTab.tsx`): total sets/reps tiles, per-broad-group cards (`GROUP_ORDER`, 9 groups) with status pill (Under/On track/Over), progress bar, "Edit target" → `TargetEditDialog.tsx` (mirrors `ConfirmDialog`'s overlay shell with two number inputs).
+  - **Body** (`BodyTab.tsx`): `BodyMap` in `"load"` mode, fine-grained counts normalized to 0–1 client-side (`getWeekMuscleLoad` returns raw counts, not pre-normalized, so the query stays reusable if a future caller wants raw numbers), + flat list of all 19 fine-grained muscles' set counts.
+  - **Trends** (`TrendsTab.tsx`): always compares the current week vs. last week regardless of the Sets/Body week-nav offset (matches the prototype — Trends has no week nav of its own), radar chart + 4 trend tiles (Workouts/Duration/Volume/Sets) with up/down arrows (green/red/neutral by sign of the diff).
+  - Sets/Body share one `weekOffset` (lifted in `StatsScreen`, prev/next clamped so "next" can't go past the current week) via `WeekNav.tsx`; Trends ignores it.
+- **Judgment call**: `getWeekSets`/`getWeekTrends`'s broad-muscle-group totals (`groups`/`reps`) are **not** derived by summing `aggregateLoad`'s fine-grained output over `BROAD`, even though the build plan originally described both stats queries as "one week-bounded scan + `aggregateLoad`". The prototype's `weekSetsData` dedups at the *broad-group* level per exercise (a set counts once per distinct broad group among primaries, half for any secondary group not already a primary) — e.g. Overhead Press's primary `shoulders_front`+`shoulders_side` both map to "Shoulders" and must only add the set once. Fine-grained `aggregateLoad` has no such dedup (each fine muscle id gets its own 1.0/0.5), so summing it over `BROAD` would double-count exercises like this. `computeWeekLoad` in `convex/stats.ts` replicates the prototype's per-exercise dedup faithfully for `groups`/`reps`, and only reuses `aggregateLoad` as-is for the Body tab's `fine` map, which has no broad-group collision to guard against.
+
+**Verified for M5**: `tsc --noEmit` clean, `npx convex dev --once` clean (including the cross-folder import of `features/exercises/library/*` into `convex/stats.ts` — Convex bundles it fine, no `convex/tsconfig.json` restriction found), `npx convex run` sanity checks on all 5 new functions (queries degrade to empty unauthenticated, `setTarget` throws only on the auth check), curl smoke test on `/stats` (307→`/login`, no 500). Browser click-through (same scratch-Playwright approach as M3/M4): signed up a fresh account, logged a Bench Press + Squat session, confirmed the summary screen's muscle map/effective-sets list, then checked all 3 Statistics tabs — Sets tab showed 2 total sets/14 total reps and correct per-group numbers (Glutes 1, Quadriceps 1, Hamstrings 0.5 — matching the dedup logic above), Body tab's muscle map and sorted list matched the summary screen, Trends tab's radar rendered current-vs-previous (previous week empty, so its polygon correctly collapsed to the center) with correct trend-card arrows/colors. Edited a target (Glutes 16–20 → 5–9), saved, and watched the Sets tab immediately reflow the range and status pill. Zero console errors. One test-script gotcha, not an app bug: `page.click("text=Save workout")` initially matched the summary screen's sheet-header title (also literally "Save workout") instead of the button and silently no-opped — fixed by scoping to `button:has-text(...)`.
 
 ### M6 — Polish ⬜
 - [ ] Responsive breakpoints verified at 768px/1000px (nav pill, sheet-vs-modal, routine grid) against actual rendered output, not just class names.
@@ -184,7 +191,7 @@ convex/
 - [ ] `loading.tsx` skeletons audited per route (some are placeholder text only right now).
 - [ ] Empty states audited against the full spec (no folders/custom exercises yet, zero-history exercise, single-session routine, brand-new user with nothing logged).
 - [ ] Tailwind lint suggestions cleanup (IDE has been flagging `px-[13px]` → `px-3.25` style canonical-class warnings throughout — cosmetic, non-blocking, worth a pass).
-- [ ] Full click-through pass of M5 once built (M3 and M4's passes only exercised M0–M4 surfaces).
+- [ ] Full combined click-through pass across every tab in one session (M3/M4/M5 each verified their own surfaces in isolation; no pass yet has exercised Workout+Progress+Statistics together end-to-end in one sitting).
 
 ---
 
@@ -192,5 +199,5 @@ convex/
 
 1. Read this file, then skim `docs/architecture.md` for the rules being followed.
 2. Check what's running: `lsof -i -P -n | grep LISTEN` (dev server) and `npx convex dev --once` (push any pending backend changes, catches errors fast). If a browser screenshot ever looks unstyled, restart the dev server first (see the stale-Turbopack-CSS gotcha in Environment facts) before assuming it's a code bug.
-3. Pick up at M5 (next unchecked milestone) unless told otherwise.
+3. Pick up at M6 (next unchecked milestone) unless told otherwise.
 4. After each milestone: `npx tsc --noEmit`, `npx convex dev --once`, curl-smoke-test any new routes, and drive it in a real browser (Playwright in a scratch dir — see Environment facts).
