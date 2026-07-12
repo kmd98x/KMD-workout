@@ -1,0 +1,230 @@
+"use client";
+
+import { useMutation, useQuery } from "convex/react";
+import { useState } from "react";
+import { api } from "@/convex/_generated/api";
+import { ExerciseDetailTabs } from "@/features/exercises/components/ExerciseDetailTabs";
+import { ExercisePickerSheet } from "@/features/exercises/components/ExercisePickerSheet";
+import { MusclePanel } from "@/features/exercises/components/MusclePanel";
+import { useExerciseHistory } from "@/features/exercises/hooks/useExerciseHistory";
+import { formatDuration } from "@/shared/lib/date";
+import { ConfirmDialog } from "@/shared/ui/ConfirmDialog";
+import { SetBlock, type DraftExercise, type DraftSet } from "@/shared/ui/SetBlock";
+import { SheetHeader } from "@/shared/ui/SheetHeader";
+import { useSheet } from "@/shared/ui/SheetHost";
+import { ElapsedTimer } from "./ElapsedTimer";
+import { WorkoutSummaryScreen } from "./WorkoutSummaryScreen";
+
+function hasValue(s: DraftSet): boolean {
+  return Boolean(s.reps || s.weight || s.min);
+}
+
+export function ActiveStrengthScreen({
+  initialExercises,
+  routineName,
+}: {
+  initialExercises: DraftExercise[];
+  routineName?: string;
+}) {
+  const { push, pop, closeAll } = useSheet();
+  const finishStrengthSession = useMutation(api.logging.finishStrengthSession);
+  const customExercises = useQuery(api.exercises.listCustomExercises) ?? [];
+
+  const [startTs] = useState(() => Date.now());
+  const [exercises, setExercises] = useState<DraftExercise[]>(initialExercises);
+  const [phase, setPhase] = useState<"log" | "summary">("log");
+  const [notes, setNotes] = useState("");
+  const [confirmFinish, setConfirmFinish] = useState(false);
+  // Snapshotted once at "Finish" so the summary's displayed duration and the
+  // saved duration always match, instead of drifting if the user lingers.
+  const [finishedDurationSec, setFinishedDurationSec] = useState(0);
+
+  function updateExercise(i: number, next: DraftExercise) {
+    setExercises((exs) => exs.map((ex, idx) => (idx === i ? next : ex)));
+  }
+  function removeExercise(i: number) {
+    setExercises((exs) => exs.filter((_, idx) => idx !== i));
+  }
+  function openPicker() {
+    push(
+      "exercise-picker",
+      <ExercisePickerSheet
+        onPick={({ name, cardio }) => {
+          const sets: DraftSet[] = cardio
+            ? [{ min: "", done: false }]
+            : [{ weight: "", reps: "", done: false }];
+          setExercises((exs) => [...exs, { name, cardio, sets }]);
+        }}
+      />
+    );
+  }
+
+  function proceedFinish(current: DraftExercise[]) {
+    const cleaned = current
+      .map((ex) => ({ ...ex, sets: ex.sets.filter(hasValue) }))
+      .filter((ex) => ex.sets.length > 0);
+    if (cleaned.length === 0) {
+      closeAll();
+      return;
+    }
+    setExercises(cleaned);
+    setFinishedDurationSec((Date.now() - startTs) / 1000);
+    setPhase("summary");
+  }
+
+  function handleFinish() {
+    const anyDone = exercises.some((ex) => ex.sets.some((s) => hasValue(s) && s.done));
+    const anyUndone = exercises.some((ex) => ex.sets.some((s) => hasValue(s) && !s.done));
+    if (anyDone && anyUndone) {
+      setConfirmFinish(true);
+      return;
+    }
+    proceedFinish(exercises);
+  }
+
+  async function save() {
+    await finishStrengthSession({
+      routineName,
+      exercises,
+      durationSec: finishedDurationSec,
+      notes: notes.trim() || undefined,
+      ts: startTs,
+    });
+    closeAll();
+  }
+
+  if (phase === "summary") {
+    let volume = 0;
+    let setCount = 0;
+    exercises.forEach((ex) => {
+      ex.sets.forEach((s) => {
+        if (ex.cardio) {
+          if ((Number(s.min) || 0) > 0) setCount++;
+        } else {
+          const reps = Number(s.reps) || 0;
+          const w = Number(s.weight) || 0;
+          if (reps > 0) {
+            setCount++;
+            volume += w * reps;
+          }
+        }
+      });
+    });
+    const customByName = Object.fromEntries(
+      customExercises.map((c) => [c.name, { primaryMuscle: c.primaryMuscle }])
+    );
+    const hasMuscleData = exercises.some((ex) => !ex.cardio);
+
+    return (
+      <WorkoutSummaryScreen
+        title={routineName ?? "Workout"}
+        stats={[
+          { label: "Duration", value: formatDuration(finishedDurationSec), accent: true },
+          { label: "Volume", value: `${Math.round(volume * 10) / 10} kg` },
+          { label: "Sets", value: `${setCount}` },
+        ]}
+        muscleSection={
+          hasMuscleData ? (
+            <MusclePanel exercises={exercises} customExercisesByName={customByName} />
+          ) : undefined
+        }
+        notes={notes}
+        onNotesChange={setNotes}
+        onBack={() => setPhase("log")}
+        onSave={save}
+        onDiscard={closeAll}
+      />
+    );
+  }
+
+  return (
+    <div className="p-4">
+      <SheetHeader
+        title={routineName ?? "Workout"}
+        onClose={closeAll}
+        right={
+          <button
+            type="button"
+            onClick={handleFinish}
+            className="text-[15px] font-bold text-blue"
+          >
+            Finish
+          </button>
+        }
+      />
+      <ElapsedTimer startTs={startTs} />
+
+      {exercises.length === 0 && (
+        <div className="py-8 text-center text-[14px] text-muted-2">
+          <span className="mb-1.5 block text-lg font-bold text-muted">
+            No exercises yet.
+          </span>
+          Add one to get started.
+        </div>
+      )}
+
+      {exercises.map((ex, i) => (
+        <LoggingSetBlock
+          key={i}
+          exercise={ex}
+          onChange={(next) => updateExercise(i, next)}
+          onRemove={() => removeExercise(i)}
+          onOpenDetail={() =>
+            push("exercise-detail", <ExerciseDetailTabs name={ex.name} onBack={pop} />)
+          }
+        />
+      ))}
+
+      <button
+        type="button"
+        onClick={openPicker}
+        className="w-full rounded-2xl bg-surface py-4 text-[15.5px] font-bold text-blue"
+      >
+        + Add exercise
+      </button>
+
+      <ConfirmDialog
+        open={confirmFinish}
+        message="You haven't checked off all your sets. Finish anyway?"
+        onCancel={() => setConfirmFinish(false)}
+        onConfirm={() => {
+          setConfirmFinish(false);
+          proceedFinish(exercises);
+        }}
+      />
+    </div>
+  );
+}
+
+/** Wraps SetBlock with its own bounded exercise-history subscription, so
+ * "last time" data loads per exercise without breaking rules-of-hooks when
+ * exercises are added/removed from the list above. */
+function LoggingSetBlock({
+  exercise,
+  onChange,
+  onRemove,
+  onOpenDetail,
+}: {
+  exercise: DraftExercise;
+  onChange: (next: DraftExercise) => void;
+  onRemove: () => void;
+  onOpenDetail: () => void;
+}) {
+  const history = useExerciseHistory(exercise.name);
+  const previousSets = exercise.cardio
+    ? undefined
+    : history === undefined
+      ? undefined
+      : (history.matches[0]?.sets ?? null);
+
+  return (
+    <SetBlock
+      exercise={exercise}
+      mode="log"
+      previousSets={previousSets}
+      onChange={onChange}
+      onRemove={onRemove}
+      onOpenDetail={onOpenDetail}
+    />
+  );
+}
