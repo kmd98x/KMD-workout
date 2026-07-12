@@ -10,7 +10,7 @@ export function TrendsTab() {
   const data = useQuery(api.stats.getWeekTrends, { currentWeekStartTs });
 
   if (data === undefined) {
-    return <div className="h-[480px] animate-pulse rounded-card bg-surface" />;
+    return <div className="h-120 animate-pulse rounded-card bg-surface" />;
   }
 
   const axes = data.radar.axes.map((label) => ({

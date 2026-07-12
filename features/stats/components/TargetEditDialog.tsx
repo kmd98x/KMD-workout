@@ -33,7 +33,7 @@ export function TargetEditDialog({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-[340px] rounded-2xl border border-line bg-surface p-[22px]">
+      <div className="w-full max-w-85 rounded-2xl border border-line bg-surface p-5.5">
         <p className="mb-4 text-[15px] font-bold text-ink">
           Weekly set target &mdash; {group}
         </p>
@@ -67,14 +67,14 @@ export function TargetEditDialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-[10px] bg-surface-2 px-[18px] py-[11px] text-sm font-bold text-ink"
+            className="rounded-[10px] bg-surface-2 px-4.5 py-2.75 text-sm font-bold text-ink"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={save}
-            className="rounded-[10px] bg-blue px-[18px] py-[11px] text-sm font-bold text-white"
+            className="rounded-[10px] bg-blue px-4.5 py-2.75 text-sm font-bold text-white"
           >
             Save
           </button>

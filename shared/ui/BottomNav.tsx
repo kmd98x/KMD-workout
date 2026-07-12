@@ -81,7 +81,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-30 flex justify-center gap-2 border-t border-line bg-black/90 py-[9px] backdrop-blur-md md:inset-x-auto md:bottom-[22px] md:left-1/2 md:w-auto md:-translate-x-1/2 md:rounded-full md:border md:bg-[rgba(24,24,26,0.94)] md:p-1.5 md:shadow-[0_10px_34px_rgba(0,0,0,0.55)]"
+      className="fixed inset-x-0 bottom-0 z-30 flex justify-center gap-2 border-t border-line bg-black/90 py-2.25 backdrop-blur-md md:inset-x-auto md:bottom-5.5 md:left-1/2 md:w-auto md:-translate-x-1/2 md:rounded-full md:border md:bg-[rgba(24,24,26,0.94)] md:p-1.5 md:shadow-[0_10px_34px_rgba(0,0,0,0.55)]"
       style={{ paddingBottom: "max(9px, env(safe-area-inset-bottom))" }}
     >
       {TABS.map((tab) => {
@@ -95,7 +95,7 @@ export function BottomNav() {
               active ? "text-blue md:bg-surface-2" : "text-muted-2 hover:text-ink"
             }`}
           >
-            <span className="h-[22px] w-[22px] md:h-[19px] md:w-[19px] [&>svg]:h-full [&>svg]:w-full">
+            <span className="h-5.5 w-5.5 md:h-4.75 md:w-4.75 [&>svg]:h-full [&>svg]:w-full">
               {tab.icon}
             </span>
             {tab.label}

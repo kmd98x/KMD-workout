@@ -22,7 +22,7 @@ export function BodyTab({
       <WeekNav weekStartTs={weekStartTs} offset={offset} onOffsetChange={onOffsetChange} />
 
       {data === undefined ? (
-        <div className="h-[420px] animate-pulse rounded-card bg-surface" />
+        <div className="h-105 animate-pulse rounded-card bg-surface" />
       ) : (
         <>
           <BodyMap mode="load" load={normalize(data.fine)} />

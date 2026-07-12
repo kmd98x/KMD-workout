@@ -65,7 +65,7 @@ export function FolderEditorSheet({
         <button
           type="button"
           onClick={() => setConfirmingDelete(true)}
-          className="mx-auto mt-[18px] block text-[15px] font-semibold text-danger"
+          className="mx-auto mt-4.5 block text-[15px] font-semibold text-danger"
         >
           Delete folder
         </button>

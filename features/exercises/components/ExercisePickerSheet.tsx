@@ -71,7 +71,7 @@ export function ExercisePickerSheet({
                 });
                 pick(pendingName);
               }}
-              className="mb-2 w-full rounded-xl border border-line bg-surface px-[13px] py-2.5 text-left text-[15px] font-medium text-ink"
+              className="mb-2 w-full rounded-xl border border-line bg-surface px-3.25 py-2.5 text-left text-[15px] font-medium text-ink"
             >
               {m.label}
             </button>
@@ -126,7 +126,7 @@ export function ExercisePickerSheet({
             <button
               type="button"
               onClick={() => setPendingName(query.trim())}
-              className="mb-2 w-full rounded-xl border border-line bg-surface px-[13px] py-2.5 text-left"
+              className="mb-2 w-full rounded-xl border border-line bg-surface px-3.25 py-2.5 text-left"
             >
               <span className="text-[13.5px] font-bold text-blue">
                 + Add &ldquo;{query.trim()}&rdquo;
@@ -151,7 +151,7 @@ function PickerGroup({
   onPick: (n: string) => void;
 }) {
   return (
-    <div className="mb-[18px]">
+    <div className="mb-4.5">
       <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-blue">
         {label}
       </div>
@@ -175,7 +175,7 @@ function PickerItem({
     <button
       type="button"
       onClick={onClick}
-      className="mb-2 flex w-full items-center gap-3 rounded-xl border border-line bg-surface px-[13px] py-2.5 text-left hover:bg-surface-2"
+      className="mb-2 flex w-full items-center gap-3 rounded-xl border border-line bg-surface px-3.25 py-2.5 text-left hover:bg-surface-2"
     >
       <ExerciseThumb name={name} />
       <span className="min-w-0 flex-1 text-[15px] font-medium text-ink">

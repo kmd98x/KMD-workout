@@ -20,7 +20,7 @@ export function RhythmChart() {
         Rhythm &middot; last 6 weeks
       </div>
       {weeks === undefined ? (
-        <div className="h-[177px] animate-pulse rounded-card bg-surface" />
+        <div className="h-44.25 animate-pulse rounded-card bg-surface" />
       ) : (
         <div className="rounded-card bg-surface p-4">
           <BarChart

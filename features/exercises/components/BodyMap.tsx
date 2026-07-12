@@ -58,7 +58,7 @@ export function BodyMap(props: BodyMapProps) {
         </div>
         <div
           ref={frontRef}
-          className="[&_svg]:mx-auto [&_svg]:block [&_svg]:h-[231px] [&_svg]:w-[130px]"
+          className="[&_svg]:mx-auto [&_svg]:block [&_svg]:h-57.75 [&_svg]:w-32.5"
           dangerouslySetInnerHTML={{ __html: SVG_FRONT }}
         />
       </div>
@@ -68,7 +68,7 @@ export function BodyMap(props: BodyMapProps) {
         </div>
         <div
           ref={backRef}
-          className="[&_svg]:mx-auto [&_svg]:block [&_svg]:h-[231px] [&_svg]:w-[130px]"
+          className="[&_svg]:mx-auto [&_svg]:block [&_svg]:h-57.75 [&_svg]:w-32.5"
           dangerouslySetInnerHTML={{ __html: SVG_BACK }}
         />
       </div>

@@ -7,7 +7,7 @@ export function LogCardioButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center justify-center gap-3 rounded-card bg-surface px-4 py-[18px] text-ink"
+      className="flex w-full items-center justify-center gap-3 rounded-card bg-surface px-4 py-4.5 text-ink"
     >
       <CardioIcon />
       <span className="text-[16px] font-bold tracking-tight">Log cardio</span>

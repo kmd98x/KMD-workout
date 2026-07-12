@@ -48,14 +48,14 @@ export function MusclePanel({
         {sorted.map((id) => {
           const pct = Math.round((eff[id] / maxv) * 100);
           return (
-            <div key={id} className="mb-2.5 flex items-center gap-[11px]">
-              <span className="w-[90px] flex-shrink-0 text-[13px] text-ink">
+            <div key={id} className="mb-2.5 flex items-center gap-2.75">
+              <span className="w-22.5 flex-shrink-0 text-[13px] text-ink">
                 {muscleLabel(id)}
               </span>
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
                 <div className="h-full rounded-full bg-blue" style={{ width: `${pct}%` }} />
               </div>
-              <span className="w-[34px] text-right text-[12.5px] font-bold text-muted">
+              <span className="w-8.5 text-right text-[12.5px] font-bold text-muted">
                 {Math.round(eff[id] * 10) / 10}
               </span>
             </div>

@@ -1,10 +1,12 @@
 "use client";
 
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function LoginForm() {
   const { signIn } = useAuthActions();
+  const router = useRouter();
   const [flow, setFlow] = useState<"signIn" | "signUp">("signIn");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -19,6 +21,15 @@ export function LoginForm() {
         const formData = new FormData(e.currentTarget);
         formData.set("flow", flow);
         signIn("password", formData)
+          .then(() => {
+            // Navigate explicitly instead of relying on proxy.ts's
+            // authenticated-hits-/login redirect: that redirect races with
+            // Convex Auth's own post-sign-in router-cache invalidation and
+            // can leave the URL/history stuck on /login (home renders, but
+            // usePathname() still reports /login, hiding BottomNav) until a
+            // manual reload. A real client navigation avoids the race.
+            router.replace("/");
+          })
           .catch(() => {
             setError(
               flow === "signIn"

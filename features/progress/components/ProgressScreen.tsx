@@ -16,7 +16,7 @@ export function ProgressScreen() {
 
   return (
     <div className="pt-2">
-      <div className="pt-[26px] pb-[18px] text-[26px] font-extrabold tracking-tight">
+      <div className="pt-6.5 pb-4.5 text-[26px] font-extrabold tracking-tight">
         Progress
       </div>
 

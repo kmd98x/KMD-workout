@@ -11,7 +11,7 @@ export default function LoginPage() {
           Sign in to keep your workouts in sync.
         </p>
       </div>
-      <div className="mx-auto w-full max-w-[340px] rounded-card bg-surface p-6">
+      <div className="mx-auto w-full max-w-85 rounded-card bg-surface p-6">
         <LoginForm />
       </div>
     </div>

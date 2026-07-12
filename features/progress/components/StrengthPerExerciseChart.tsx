@@ -18,7 +18,7 @@ export function StrengthPerExerciseChart() {
   }, [selected, strengthNames]);
 
   if (allNames === undefined) {
-    return <div className="mb-6 h-[236px] animate-pulse rounded-card bg-surface" />;
+    return <div className="mb-6 h-59 animate-pulse rounded-card bg-surface" />;
   }
   if (strengthNames.length === 0) return null;
 
@@ -51,7 +51,7 @@ function ExerciseWeightChart({ name }: { name: string }) {
   const points = useQuery(api.progress.strengthPerExercise, { name });
 
   if (points === undefined) {
-    return <div className="h-[150px] animate-pulse rounded-card bg-surface-2" />;
+    return <div className="h-37.5 animate-pulse rounded-card bg-surface-2" />;
   }
   if (points.length < 2) {
     return (

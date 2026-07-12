@@ -20,7 +20,7 @@ export function WeekStrip({ doneDays }: { doneDays: Set<string> }) {
         return (
           <div key={label} className="flex-1 text-center">
             <div
-              className={`mx-auto mb-1.5 flex h-[34px] w-[34px] items-center justify-center rounded-full border-[1.5px] text-xs transition-colors ${
+              className={`mx-auto mb-1.5 flex h-8.5 w-8.5 items-center justify-center rounded-full border-[1.5px] text-xs transition-colors ${
                 done
                   ? "border-blue bg-blue text-white"
                   : isToday

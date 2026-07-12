@@ -35,7 +35,7 @@ export default function RootLayout({
         <body className="min-h-full bg-bg text-ink">
           <ConvexClientProvider>
             <SheetHost>
-              <div className="mx-auto w-full max-w-[520px] px-[18px] pt-5 pb-[120px] md:max-w-[720px] lg:max-w-[1000px] xl:max-w-[1120px]">
+              <div className="mx-auto w-full max-w-130 px-4.5 pt-5 pb-30 md:max-w-180 lg:max-w-250 xl:max-w-280">
                 {children}
               </div>
               <BottomNav />

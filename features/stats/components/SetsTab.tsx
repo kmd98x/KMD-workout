@@ -26,7 +26,7 @@ export function SetsTab({
       <WeekNav weekStartTs={weekStartTs} offset={offset} onOffsetChange={onOffsetChange} />
 
       {loading ? (
-        <div className="h-[420px] animate-pulse rounded-card bg-surface" />
+        <div className="h-105 animate-pulse rounded-card bg-surface" />
       ) : (
         <>
           <div className="mb-5 flex gap-2.5">

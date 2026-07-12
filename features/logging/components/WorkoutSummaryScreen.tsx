@@ -66,7 +66,7 @@ export function WorkoutSummaryScreen({
           placeholder="How did it go? Add a note…"
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
-          className="min-h-[74px] w-full rounded-xl border border-line bg-surface px-3.5 py-3 text-base text-ink outline-none focus:border-blue"
+          className="min-h-18.5 w-full rounded-xl border border-line bg-surface px-3.5 py-3 text-base text-ink outline-none focus:border-blue"
         />
       </div>
 

@@ -40,7 +40,7 @@ export function RadarChart({ axes }: { axes: RadarChartAxis[] }) {
     <div className="relative">
       <svg
         viewBox="0 0 280 276"
-        className="mx-auto block w-full max-w-[330px] touch-none select-none"
+        className="mx-auto block w-full max-w-82.5 touch-none select-none"
         onPointerLeave={() => setActive(null)}
       >
         {[1, 2, 3, 4].map((ring) => (

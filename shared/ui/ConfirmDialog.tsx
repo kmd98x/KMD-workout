@@ -23,20 +23,20 @@ export function ConfirmDialog({
         if (e.target === e.currentTarget) onCancel();
       }}
     >
-      <div className="w-full max-w-[340px] rounded-2xl border border-line bg-surface p-[22px]">
+      <div className="w-full max-w-85 rounded-2xl border border-line bg-surface p-5.5">
         <p className="mb-5 text-[15px] leading-snug text-ink">{message}</p>
         <div className="flex justify-end gap-2.5">
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-[10px] bg-surface-2 px-[18px] py-[11px] text-sm font-bold text-ink"
+            className="rounded-[10px] bg-surface-2 px-4.5 py-2.75 text-sm font-bold text-ink"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className={`rounded-[10px] px-[18px] py-[11px] text-sm font-bold text-white ${
+            className={`rounded-[10px] px-4.5 py-2.75 text-sm font-bold text-white ${
               danger ? "bg-danger" : "bg-blue"
             }`}
           >

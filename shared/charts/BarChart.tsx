@@ -18,7 +18,7 @@ export function BarChart({
   const max = Math.max(1, ...points.map((p) => p.value));
 
   return (
-    <div className="flex h-[130px] items-end justify-between gap-2">
+    <div className="flex h-32.5 items-end justify-between gap-2">
       {points.map((p, i) => {
         const barHeight = Math.round((p.value / max) * 84) + 4;
         return (
@@ -27,7 +27,7 @@ export function BarChart({
               {p.value > 0 ? (formatValue ? formatValue(p.value) : p.value) : ""}
             </span>
             <div
-              className={`w-full max-w-[24px] rounded-t-[4px] ${
+              className={`w-full max-w-6 rounded-t-[4px] ${
                 p.highlighted ? "bg-blue" : "bg-surface-2"
               }`}
               style={{ height: barHeight }}

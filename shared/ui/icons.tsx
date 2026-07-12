@@ -7,7 +7,7 @@ export function BackIcon() {
       strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-[22px] w-[22px]"
+      className="h-5.5 w-5.5"
     >
       <path d="M15 6l-6 6 6 6" />
     </svg>
@@ -22,7 +22,7 @@ export function CloseIcon() {
       stroke="currentColor"
       strokeWidth={2}
       strokeLinecap="round"
-      className="h-[22px] w-[22px]"
+      className="h-5.5 w-5.5"
     >
       <path d="M6 6l12 12M18 6L6 18" />
     </svg>
@@ -56,7 +56,7 @@ export function CheckIcon() {
       strokeWidth={3}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-[15px] w-[15px]"
+      className="h-3.75 w-3.75"
     >
       <path d="M20 6L9 17l-5-5" />
     </svg>

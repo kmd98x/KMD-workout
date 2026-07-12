@@ -65,7 +65,7 @@ export function RoutineTrendChart({ routine }: { routine: Doc<"routines"> }) {
   });
 
   if (sessions === undefined) {
-    return <div className="mb-6 h-[150px] animate-pulse rounded-card bg-surface" />;
+    return <div className="mb-6 h-37.5 animate-pulse rounded-card bg-surface" />;
   }
 
   // Query returns newest-first; the chart reads left-to-right chronologically.

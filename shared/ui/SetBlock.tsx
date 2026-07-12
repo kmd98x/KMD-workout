@@ -87,7 +87,7 @@ export function SetBlock({
       </div>
 
       {mode === "log" && !exercise.cardio && previousSets !== undefined && (
-        <div className="-mt-0.5 mb-2.5 ml-[50px] text-[11.5px] text-muted-2">
+        <div className="-mt-0.5 mb-2.5 ml-12.5 text-[11.5px] text-muted-2">
           {previousSets && previousSets.length > 0
             ? `Last time: ${previousSets
                 .map((s) => `${s.weight || 0}kg×${s.reps || 0}`)

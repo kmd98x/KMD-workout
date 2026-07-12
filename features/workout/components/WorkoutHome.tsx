@@ -34,7 +34,7 @@ export function WorkoutHome({
 
   return (
     <div className="pt-2">
-      <div className="flex items-baseline justify-between pt-[26px] pb-[18px]">
+      <div className="flex items-baseline justify-between pt-6.5 pb-4.5">
         <div className="text-[26px] font-extrabold tracking-tight">
           <span className="text-blue">Steady</span>
         </div>
