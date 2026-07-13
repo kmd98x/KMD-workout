@@ -23,6 +23,17 @@ function pad(n: number): string {
   return n < 10 ? `0${n}` : `${n}`;
 }
 
+/** "2026-07-13" for an `<input type="date">` value, in local time. */
+export function toDateInputValue(d: Date = new Date()): string {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** Parses an `<input type="date">` value ("YYYY-MM-DD") into a local-midnight timestamp. */
+export function parseDateInputValue(value: string): number {
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(y, m - 1, d).getTime();
+}
+
 /** "12:34" or "1:02:34" for durations at or past an hour. */
 export function formatDuration(totalSeconds: number): string {
   const sec = Math.max(0, Math.round(totalSeconds));

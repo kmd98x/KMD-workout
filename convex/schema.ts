@@ -85,6 +85,25 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_name", ["userId", "name"]),
 
+  // --- stats: body measurements over time (one entry per calendar day) ---
+  measurements: defineTable({
+    userId: v.id("users"),
+    ts: v.number(),
+    weight: v.optional(v.number()),
+    bust: v.optional(v.number()),
+    waist: v.optional(v.number()),
+    hips: v.optional(v.number()),
+    leftThigh: v.optional(v.number()),
+    rightThigh: v.optional(v.number()),
+  }).index("by_user_ts", ["userId", "ts"]),
+
+  // --- stats: stable profile fields for derived metrics (e.g. BMI needs
+  // height, which doesn't change per-entry the way weight does) ---
+  userProfile: defineTable({
+    userId: v.id("users"),
+    heightCm: v.optional(v.number()),
+  }).index("by_user", ["userId"]),
+
   // --- stats: weekly muscle-group set targets ---
   targets: defineTable({
     userId: v.id("users"),

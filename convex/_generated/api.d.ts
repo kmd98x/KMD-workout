@@ -13,6 +13,8 @@ import type * as exercises from "../exercises.js";
 import type * as http from "../http.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as logging from "../logging.js";
+import type * as measurements from "../measurements.js";
+import type * as profile from "../profile.js";
 import type * as progress from "../progress.js";
 import type * as stats from "../stats.js";
 import type * as workout from "../workout.js";
@@ -29,6 +31,8 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "lib/auth": typeof lib_auth;
   logging: typeof logging;
+  measurements: typeof measurements;
+  profile: typeof profile;
   progress: typeof progress;
   stats: typeof stats;
   workout: typeof workout;

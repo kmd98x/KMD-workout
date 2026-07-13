@@ -4,16 +4,18 @@ import { useState } from "react";
 import { startOfWeek } from "@/shared/lib/date";
 import { Chip } from "@/shared/ui/Chip";
 import { BodyTab } from "./BodyTab";
+import { MeasurementsTab } from "./MeasurementsTab";
 import { SetsTab } from "./SetsTab";
 import { TrendsTab } from "./TrendsTab";
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
-type Tab = "sets" | "body" | "trends";
+type Tab = "sets" | "body" | "trends" | "measurements";
 const TABS: { id: Tab; label: string }[] = [
   { id: "sets", label: "Sets" },
   { id: "body", label: "Body" },
   { id: "trends", label: "Trends" },
+  { id: "measurements", label: "Measure" },
 ];
 
 export function StatsScreen() {
@@ -42,6 +44,7 @@ export function StatsScreen() {
         <BodyTab weekStartTs={weekStartTs} offset={weekOffset} onOffsetChange={setWeekOffset} />
       )}
       {tab === "trends" && <TrendsTab />}
+      {tab === "measurements" && <MeasurementsTab />}
     </div>
   );
 }
