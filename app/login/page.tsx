@@ -5,7 +5,7 @@ export default function LoginPage() {
     <div className="flex min-h-[80vh] flex-col justify-center py-10">
       <div className="mb-8 text-center">
         <div className="text-[26px] font-extrabold tracking-tight">
-          <span className="text-blue">Steady</span>
+          <span className="text-blue">KMD&apos;s Workout</span>
         </div>
         <p className="mt-1 text-[12.5px] text-muted-2">
           Sign in to keep your workouts in sync.

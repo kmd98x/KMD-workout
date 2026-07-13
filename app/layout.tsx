@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Steady",
+  title: "KMD's Workout",
   description: "A no-frills workout tracker.",
 };
 

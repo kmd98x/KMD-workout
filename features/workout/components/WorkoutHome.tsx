@@ -3,7 +3,6 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { usePreloadedQuery, useQuery, type Preloaded } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { ActiveCardioScreen } from "@/features/logging/components/ActiveCardioScreen";
 import { ActiveStrengthScreen } from "@/features/logging/components/ActiveStrengthScreen";
 import { startOfWeek } from "@/shared/lib/date";
 import { useSheet } from "@/shared/ui/SheetHost";
@@ -11,7 +10,6 @@ import { FolderEditorSheet } from "../editors/FolderEditorSheet";
 import { RoutineEditorSheet } from "../editors/RoutineEditorSheet";
 import { FolderRow } from "./FolderRow";
 import { GreetingHeader } from "./GreetingHeader";
-import { LogCardioButton } from "./LogCardioButton";
 import { QuickStartButton } from "./QuickStartButton";
 import { RoutineCard } from "./RoutineCard";
 
@@ -36,7 +34,7 @@ export function WorkoutHome({
     <div className="pt-2">
       <div className="flex items-baseline justify-between pt-6.5 pb-4.5">
         <div className="text-[26px] font-extrabold tracking-tight">
-          <span className="text-blue">Steady</span>
+          <span className="text-blue">KMD&apos;s Workout</span>
         </div>
         <button
           type="button"
@@ -53,7 +51,7 @@ export function WorkoutHome({
             sessionsThisWeek={weekSummary?.count ?? 0}
             doneDays={new Set(weekSummary?.days ?? [])}
           />
-          <div className="mt-2 grid grid-cols-2 gap-3">
+          <div className="mt-2">
             <QuickStartButton
               onClick={() =>
                 push(
@@ -61,9 +59,6 @@ export function WorkoutHome({
                   <ActiveStrengthScreen initialExercises={[]} />
                 )
               }
-            />
-            <LogCardioButton
-              onClick={() => push("active-cardio", <ActiveCardioScreen />)}
             />
           </div>
         </div>
