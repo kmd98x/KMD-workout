@@ -6,7 +6,7 @@ import { BodyMap } from "./BodyMap";
 type ExerciseLike = {
   name: string;
   cardio: boolean;
-  sets: { weight?: string; reps?: string; min?: string }[];
+  sets: { weight?: string; reps?: string; min?: string; warmup?: boolean }[];
 };
 
 /** "Muscles worked" block: heatmap + a sorted effective-sets bar list.

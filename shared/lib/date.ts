@@ -59,6 +59,12 @@ export function formatDate(ts: number): string {
   return `${DAY_NAMES[d.getDay()]} ${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
 }
 
+/** "12 Jul" — compact, non-relative date for chart axis ticks. */
+export function formatShortDate(ts: number): string {
+  const d = new Date(ts);
+  return `${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
+}
+
 /** "Wed 12 Jul 2026, 9:04". */
 export function formatFullDate(ts: number): string {
   const d = new Date(ts);

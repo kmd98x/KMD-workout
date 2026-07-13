@@ -51,6 +51,7 @@ export const strengthPerExercise = query({
       if (m.cardio) continue;
       let best = 0;
       for (const s of m.sets) {
+        if (s.warmup) continue;
         const w = Number(s.weight) || 0;
         if (w > best) best = w;
       }

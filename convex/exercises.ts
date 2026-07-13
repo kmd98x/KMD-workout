@@ -45,6 +45,7 @@ const historySet = v.object({
   reps: v.optional(v.string()),
   min: v.optional(v.string()),
   done: v.optional(v.boolean()),
+  warmup: v.optional(v.boolean()),
 });
 
 export type ExerciseHistoryMatch = {

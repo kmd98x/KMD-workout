@@ -8,6 +8,7 @@ const strengthSetTarget = v.object({
   weight: v.optional(v.string()),
   reps: v.optional(v.string()),
   min: v.optional(v.string()),
+  warmup: v.optional(v.boolean()),
 });
 
 const routineExercise = v.object({

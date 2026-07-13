@@ -55,7 +55,11 @@ function computeWeekLoad(
   let totalVolume = 0;
   let totalDurationSec = 0;
   let workouts = 0;
-  const allExercises: { name: string; cardio: boolean; sets: { weight?: string; reps?: string; min?: string }[] }[] = [];
+  const allExercises: {
+    name: string;
+    cardio: boolean;
+    sets: { weight?: string; reps?: string; min?: string; warmup?: boolean }[];
+  }[] = [];
 
   for (const s of sessions) {
     if (s.type !== "strength" || !s.exercises) continue;
@@ -64,9 +68,10 @@ function computeWeekLoad(
 
     for (const ex of s.exercises) {
       allExercises.push(ex);
-      const setCount = ex.sets.filter((x) => x.reps || x.weight || x.min).length;
+      const workingSets = ex.sets.filter((x) => !x.warmup);
+      const setCount = workingSets.filter((x) => x.reps || x.weight || x.min).length;
       let repCount = 0;
-      for (const x of ex.sets) {
+      for (const x of workingSets) {
         const r = Number(x.reps) || 0;
         repCount += r;
         totalVolume += (Number(x.weight) || 0) * r;

@@ -8,6 +8,7 @@ export type DraftSet = {
   reps?: string;
   min?: string;
   done?: boolean;
+  warmup?: boolean;
 };
 export type DraftExercise = { name: string; cardio: boolean; sets: DraftSet[] };
 
@@ -56,11 +57,20 @@ export function SetBlock({
   function toggleDone(i: number) {
     updateSet(i, { done: !exercise.sets[i].done });
   }
+  function toggleWarmup(i: number) {
+    updateSet(i, { warmup: !exercise.sets[i].warmup });
+  }
 
   const checkButtonClass = (done?: boolean) =>
     `flex h-8 w-8 items-center justify-center rounded-[9px] border-[1.6px] ${
       done ? "border-green bg-green text-[#04310F]" : "border-line text-muted-2"
     }`;
+
+  // Working sets are numbered on their own — warm-ups don't take a number,
+  // so the first real set always starts at 1 regardless of how many
+  // warm-ups come before it.
+  let workingCount = 0;
+  const workingSetNumber = exercise.sets.map((s) => (s.warmup ? null : ++workingCount));
 
   return (
     <div className="mb-3 rounded-card bg-surface p-4">
@@ -167,11 +177,22 @@ export function SetBlock({
             return (
               <div
                 key={i}
-                className="mb-1.5 grid grid-cols-[24px_1fr_1fr_32px_22px] items-center gap-2"
+                className={`mb-1.5 grid grid-cols-[24px_1fr_1fr_32px_22px] items-center gap-2 ${
+                  s.warmup ? "opacity-60" : ""
+                }`}
               >
-                <div className="text-center text-xs font-bold text-muted-2">
-                  {i + 1}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => toggleWarmup(i)}
+                  className={`text-center text-xs font-bold ${
+                    s.warmup ? "text-orange" : "text-muted-2"
+                  }`}
+                  aria-label={
+                    s.warmup ? "Warm-up set — tap to mark as working set" : "Tap to mark as warm-up"
+                  }
+                >
+                  {s.warmup ? "W" : workingSetNumber[i]}
+                </button>
                 <input
                   type="number"
                   min={0}

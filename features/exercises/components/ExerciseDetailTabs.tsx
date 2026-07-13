@@ -149,6 +149,7 @@ function SummaryTab({
   for (const m of matches) {
     let sessVol = sessionVolumes.get(m.sessionId) ?? 0;
     for (const s of m.sets) {
+      if (s.warmup) continue;
       const w = Number(s.weight) || 0;
       const reps = Number(s.reps) || 0;
       if (w > heaviest) heaviest = w;

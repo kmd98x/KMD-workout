@@ -5,7 +5,7 @@ export function SetTable({
   sets,
   cardio,
 }: {
-  sets: { weight?: string; reps?: string; min?: string }[];
+  sets: { weight?: string; reps?: string; min?: string; warmup?: boolean }[];
   cardio: boolean;
 }) {
   const cols = cardio ? "grid-cols-[52px_1fr]" : "grid-cols-[52px_1fr_1fr]";
@@ -24,9 +24,11 @@ export function SetTable({
           key={i}
           className={`grid ${cols} items-center rounded-lg px-1.5 py-3.5 text-base ${
             i % 2 === 1 ? "bg-surface" : ""
-          }`}
+          } ${s.warmup ? "opacity-60" : ""}`}
         >
-          <span className="font-bold text-ink">{i + 1}</span>
+          <span className={`font-bold ${s.warmup ? "text-orange" : "text-ink"}`}>
+            {s.warmup ? "W" : i + 1}
+          </span>
           {cardio ? (
             <span className="text-muted">{s.min || "–"}</span>
           ) : (

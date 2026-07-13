@@ -73,8 +73,10 @@ export function ActiveStrengthScreen({
   }
 
   function handleFinish() {
-    const anyDone = exercises.some((ex) => ex.sets.some((s) => hasValue(s) && s.done));
-    const anyUndone = exercises.some((ex) => ex.sets.some((s) => hasValue(s) && !s.done));
+    const anyDone = exercises.some((ex) => ex.sets.some((s) => hasValue(s) && !s.warmup && s.done));
+    const anyUndone = exercises.some((ex) =>
+      ex.sets.some((s) => hasValue(s) && !s.warmup && !s.done)
+    );
     if (anyDone && anyUndone) {
       setConfirmFinish(true);
       return;
@@ -98,6 +100,7 @@ export function ActiveStrengthScreen({
     let setCount = 0;
     exercises.forEach((ex) => {
       ex.sets.forEach((s) => {
+        if (s.warmup) return;
         if (ex.cardio) {
           if ((Number(s.min) || 0) > 0) setCount++;
         } else {

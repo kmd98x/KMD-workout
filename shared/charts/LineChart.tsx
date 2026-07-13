@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatDate } from "@/shared/lib/date";
+import { formatDate, formatShortDate } from "@/shared/lib/date";
 
 export type LineChartPoint = { ts: number; value: number };
 
@@ -11,7 +11,10 @@ export type LineChartPoint = { ts: number; value: number };
  * architecture — but the mark specs (2px line, >=8px ringed end-dots,
  * hairline recessive gridlines, one sparse direct label) and the tap/hover
  * crosshair+tooltip follow the dataviz skill so this and the M4/M5 charts
- * read as one system. Single series, so no legend box.
+ * read as one system. Single series, so no legend box. Y-axis ticks carry
+ * the gridline values (rounded to a clean number, per the skill's axis
+ * spec) and the x-axis gets a first/last date label — both recessive, so
+ * the line and its direct end-label still do the talking.
  */
 export function LineChart({
   points,
@@ -26,10 +29,11 @@ export function LineChart({
 
   const width = 300;
   const height = 150;
-  const padX = 12;
+  const padLeft = 30;
+  const padRight = 8;
   const padTop = 20;
-  const padBottom = 24;
-  const plotW = width - padX * 2;
+  const padBottom = 28;
+  const plotW = width - padLeft - padRight;
   const plotH = height - padTop - padBottom;
 
   const values = points.map((p) => p.value);
@@ -38,7 +42,7 @@ export function LineChart({
   const range = maxV - minV || 1;
 
   const xAt = (i: number) =>
-    padX + (points.length === 1 ? plotW / 2 : (i / (points.length - 1)) * plotW);
+    padLeft + (points.length === 1 ? plotW / 2 : (i / (points.length - 1)) * plotW);
   const yAt = (v: number) => padTop + plotH - ((v - minV) / range) * plotH;
   const colWidth = plotW / points.length;
 
@@ -47,6 +51,7 @@ export function LineChart({
     .join(" ");
 
   const gridValues = [minV, minV + range / 2, minV + range];
+  const first = points[0];
   const last = points[points.length - 1];
   const activePoint = active !== null ? points[active] : null;
 
@@ -60,14 +65,44 @@ export function LineChart({
         {gridValues.map((v, i) => (
           <line
             key={i}
-            x1={padX}
-            x2={width - padX}
+            x1={padLeft}
+            x2={width - padRight}
             y1={yAt(v)}
             y2={yAt(v)}
             stroke="var(--color-line)"
             strokeWidth={1}
           />
         ))}
+        {gridValues.map((v, i) => (
+          <text
+            key={i}
+            x={padLeft - 6}
+            y={yAt(v) + 3}
+            textAnchor="end"
+            className="fill-muted-2 text-[9px] font-semibold"
+          >
+            {Math.round(v)}
+          </text>
+        ))}
+
+        <text
+          x={xAt(0)}
+          y={height - 6}
+          textAnchor="start"
+          className="fill-muted-2 text-[9px] font-semibold"
+        >
+          {formatShortDate(first.ts)}
+        </text>
+        {points.length > 1 && (
+          <text
+            x={xAt(points.length - 1)}
+            y={height - 6}
+            textAnchor="end"
+            className="fill-muted-2 text-[9px] font-semibold"
+          >
+            {formatShortDate(last.ts)}
+          </text>
+        )}
 
         <path
           d={linePath}

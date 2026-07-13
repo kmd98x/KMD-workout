@@ -56,7 +56,10 @@ function SessionRow({ session }: { session: Doc<"sessions"> }) {
   let desc: string;
   if (isStrength) {
     const exercises = session.exercises ?? [];
-    const setCount = exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
+    const setCount = exercises.reduce(
+      (sum, ex) => sum + ex.sets.filter((s) => !s.warmup).length,
+      0
+    );
     desc = [
       session.durationSec ? formatDuration(session.durationSec) : null,
       `${exercises.length} exercise${exercises.length === 1 ? "" : "s"}`,
