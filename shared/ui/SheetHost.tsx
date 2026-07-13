@@ -56,6 +56,20 @@ export function SheetHost({ children }: { children: ReactNode }) {
   // own popstate a moment later.
   const pendingProgrammaticPops = useRef(0);
 
+  // Lock the page behind the sheet while it's open. Without this, focusing
+  // an autofocused input inside the fixed-position sheet (e.g. the exercise
+  // search box) makes iOS Safari scroll the *background* page to bring the
+  // keyboard-obscured sheet into view, which reads as the whole app
+  // jumping.
+  useEffect(() => {
+    if (stack.length === 0) return;
+    const { overflow } = document.body.style;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, [stack.length]);
+
   const push = useCallback((key: string, content: ReactNode) => {
     window.history.pushState({ sheet: true }, "");
     depthRef.current += 1;
@@ -119,9 +133,17 @@ export function SheetHost({ children }: { children: ReactNode }) {
         {/* Every stacked entry stays mounted (only display:none'd when not
             on top) so state and timers in a lower sheet (e.g. a routine
             draft, or a running workout timer) survive a nested push/pop
-            like opening the exercise picker on top of it. */}
+            like opening the exercise picker on top of it. Each entry owns
+            its own scroll container so switching the visible entry can't
+            leak one sheet's scroll position into another (that leak used to
+            read as the whole view "jumping to the top" whenever a nested
+            sheet, like the exercise picker, closed). */}
         {stack.map((entry, i) => (
-          <div key={entry.key} hidden={i !== stack.length - 1}>
+          <div
+            key={entry.key}
+            hidden={i !== stack.length - 1}
+            className="max-h-[92vh] overflow-y-auto overscroll-contain md:max-h-[88vh]"
+          >
             {entry.content}
           </div>
         ))}

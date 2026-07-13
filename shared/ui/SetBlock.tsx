@@ -49,8 +49,8 @@ export function SetBlock({
   }
   function addSet() {
     const blank: DraftSet = exercise.cardio
-      ? { min: "", done: false }
-      : { weight: "", reps: "", done: false };
+      ? { min: "", ...(mode === "log" ? { done: false } : {}) }
+      : { weight: "", reps: "", ...(mode === "log" ? { done: false } : {}) };
     onChange({ ...exercise, sets: [...exercise.sets, blank] });
   }
   function toggleDone(i: number) {
@@ -119,15 +119,19 @@ export function SetBlock({
                 placeholder="min"
                 value={s.min ?? ""}
                 onChange={(e) => updateSet(i, { min: e.target.value })}
-                className="rounded-xl border border-surface-2 bg-surface-2 px-2 py-2.5 text-center text-[15px] text-ink outline-none focus:border-blue"
+                className="w-full min-w-0 rounded-xl border border-surface-2 bg-surface-2 px-2 py-2.5 text-center text-base text-ink outline-none focus:border-blue"
               />
-              <button
-                type="button"
-                onClick={() => toggleDone(i)}
-                className={checkButtonClass(s.done)}
-              >
-                <CheckIcon />
-              </button>
+              {mode === "log" ? (
+                <button
+                  type="button"
+                  onClick={() => toggleDone(i)}
+                  className={checkButtonClass(s.done)}
+                >
+                  <CheckIcon />
+                </button>
+              ) : (
+                <span />
+              )}
               <button
                 type="button"
                 onClick={() => removeSet(i)}
@@ -175,7 +179,7 @@ export function SetBlock({
                   placeholder={prevS?.weight ?? "–"}
                   value={s.weight ?? ""}
                   onChange={(e) => updateSet(i, { weight: e.target.value })}
-                  className={`rounded-xl border px-2 py-2.5 text-center text-[15px] text-ink outline-none focus:border-blue ${
+                  className={`w-full min-w-0 rounded-xl border px-2 py-2.5 text-center text-base text-ink outline-none focus:border-blue ${
                     s.done ? "border-green/30 bg-green/10" : "border-surface-2 bg-surface-2"
                   }`}
                 />
@@ -186,17 +190,21 @@ export function SetBlock({
                   placeholder={prevS?.reps ?? (mode === "routine" ? "10" : "–")}
                   value={s.reps ?? ""}
                   onChange={(e) => updateSet(i, { reps: e.target.value })}
-                  className={`rounded-xl border px-2 py-2.5 text-center text-[15px] text-ink outline-none focus:border-blue ${
+                  className={`w-full min-w-0 rounded-xl border px-2 py-2.5 text-center text-base text-ink outline-none focus:border-blue ${
                     s.done ? "border-green/30 bg-green/10" : "border-surface-2 bg-surface-2"
                   }`}
                 />
-                <button
-                  type="button"
-                  onClick={() => toggleDone(i)}
-                  className={checkButtonClass(s.done)}
-                >
-                  <CheckIcon />
-                </button>
+                {mode === "log" ? (
+                  <button
+                    type="button"
+                    onClick={() => toggleDone(i)}
+                    className={checkButtonClass(s.done)}
+                  >
+                    <CheckIcon />
+                  </button>
+                ) : (
+                  <span />
+                )}
                 <button
                   type="button"
                   onClick={() => removeSet(i)}

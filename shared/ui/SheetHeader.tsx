@@ -16,6 +16,8 @@ export function SheetHeader({
 }) {
   return (
     <div className="sticky top-0 z-10 flex items-center justify-between gap-2.5 bg-bg py-4">
+      <div className="flex w-11 justify-start">{right}</div>
+      <h2 className="flex-1 truncate text-center text-[19px] font-bold">{title}</h2>
       <button
         type="button"
         onClick={onClose}
@@ -24,8 +26,6 @@ export function SheetHeader({
       >
         {closeIcon === "back" ? <BackIcon /> : <CloseIcon />}
       </button>
-      <h2 className="flex-1 truncate text-center text-[19px] font-bold">{title}</h2>
-      <div className="flex w-11 justify-end">{right}</div>
     </div>
   );
 }

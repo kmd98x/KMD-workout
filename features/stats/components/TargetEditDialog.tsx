@@ -34,7 +34,7 @@ export function TargetEditDialog({
       }}
     >
       <div className="w-full max-w-85 rounded-2xl border border-line bg-surface p-5.5">
-        <p className="mb-4 text-[15px] font-bold text-ink">
+        <p className="mb-4 text-base font-bold text-ink">
           Weekly set target &mdash; {group}
         </p>
         <div className="mb-5 flex gap-2.5">
@@ -47,7 +47,7 @@ export function TargetEditDialog({
               min={0}
               value={min}
               onChange={(e) => setMin(e.target.value)}
-              className="w-full rounded-[10px] border border-line bg-surface-2 px-3 py-2.5 text-[15px] text-ink outline-none focus:border-blue"
+              className="w-full rounded-[10px] border border-line bg-surface-2 px-3 py-2.5 text-base text-ink outline-none focus:border-blue"
             />
           </label>
           <label className="flex-1">
@@ -59,7 +59,7 @@ export function TargetEditDialog({
               min={0}
               value={max}
               onChange={(e) => setMax(e.target.value)}
-              className="w-full rounded-[10px] border border-line bg-surface-2 px-3 py-2.5 text-[15px] text-ink outline-none focus:border-blue"
+              className="w-full rounded-[10px] border border-line bg-surface-2 px-3 py-2.5 text-base text-ink outline-none focus:border-blue"
             />
           </label>
         </div>

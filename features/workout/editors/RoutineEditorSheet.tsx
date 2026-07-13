@@ -40,6 +40,10 @@ export function RoutineEditorSheet({
       : [],
   }));
   const [alert, setAlert] = useState<string | null>(null);
+  const [folderMenuOpen, setFolderMenuOpen] = useState(false);
+  const folderMatches = (data?.folders ?? []).filter((f) =>
+    f.name.toLowerCase().includes(draft.folderName.trim().toLowerCase())
+  );
 
   // The routine's folder is stored as an id; resolve it to a name for the
   // free-text combobox once the folders list has loaded.
@@ -120,22 +124,35 @@ export function RoutineEditorSheet({
         />
       </div>
 
-      <div className="mb-4">
+      <div className="relative mb-4">
         <label className="mb-1.5 block text-[12.5px] font-semibold text-muted">
           Folder (optional)
         </label>
         <input
-          list="routine-folder-options"
           placeholder="e.g. Push/Pull/Legs — type a new or existing folder"
           value={draft.folderName}
           onChange={(e) => setDraft((d) => ({ ...d, folderName: e.target.value }))}
+          onFocus={() => setFolderMenuOpen(true)}
+          onBlur={() => setTimeout(() => setFolderMenuOpen(false), 150)}
           className="w-full rounded-xl border border-line bg-surface px-3.5 py-3 text-base text-ink outline-none focus:border-blue"
         />
-        <datalist id="routine-folder-options">
-          {(data?.folders ?? []).map((f) => (
-            <option key={f._id} value={f.name} />
-          ))}
-        </datalist>
+        {folderMenuOpen && folderMatches.length > 0 && (
+          <div className="absolute z-10 mt-1.5 max-h-48 w-full overflow-y-auto rounded-xl border border-line bg-surface shadow-lg">
+            {folderMatches.map((f) => (
+              <button
+                key={f._id}
+                type="button"
+                onClick={() => {
+                  setDraft((d) => ({ ...d, folderName: f.name }));
+                  setFolderMenuOpen(false);
+                }}
+                className="block w-full px-3.5 py-2.5 text-left text-[14px] text-ink hover:bg-surface-2"
+              >
+                {f.name}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {draft.exercises.length === 0 && (
