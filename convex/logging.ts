@@ -96,6 +96,19 @@ export const finishCardioSession = mutation({
   },
 });
 
+/** Lets the post-finish summary screen persist a note added after the
+ * session was already saved (Finish now saves immediately, before notes
+ * are typed). */
+export const updateSessionNotes = mutation({
+  args: { id: v.id("sessions"), notes: v.string() },
+  handler: async (ctx, { id, notes }) => {
+    const userId = await requireUserId(ctx);
+    const session = await ctx.db.get(id);
+    if (!session || session.userId !== userId) throw new Error("Session not found");
+    await ctx.db.patch(id, { notes: notes.trim() || undefined });
+  },
+});
+
 export const getSession = query({
   args: { id: v.id("sessions") },
   handler: async (ctx, { id }) => {

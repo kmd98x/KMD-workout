@@ -3,6 +3,7 @@
 import { useMutation } from "convex/react";
 import { useState } from "react";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { CARDIO } from "@/features/exercises/library/library";
 import { Chip } from "@/shared/ui/Chip";
 import { ClockIcon } from "@/shared/ui/icons";
@@ -15,6 +16,7 @@ const INTENSITIES = ["Easy (conversational)", "Moderate", "Hard"];
 export function ActiveCardioScreen() {
   const { closeAll } = useSheet();
   const finishCardioSession = useMutation(api.logging.finishCardioSession);
+  const updateSessionNotes = useMutation(api.logging.updateSessionNotes);
 
   const [startTs] = useState(() => Date.now());
   const [cardioType, setCardioType] = useState(CARDIO[0]);
@@ -22,16 +24,25 @@ export function ActiveCardioScreen() {
   const [intensity, setIntensity] = useState(INTENSITIES[0]);
   const [phase, setPhase] = useState<"log" | "summary">("log");
   const [notes, setNotes] = useState("");
+  const [sessionId, setSessionId] = useState<Id<"sessions"> | null>(null);
+  const [finishing, setFinishing] = useState(false);
 
-  async function save() {
-    await finishCardioSession({
+  async function handleFinish() {
+    if (finishing) return;
+    setFinishing(true);
+    const id = await finishCardioSession({
       cardioType,
       duration: Number(duration) || 0,
       intensity,
-      notes: notes.trim() || undefined,
       ts: startTs,
     });
-    closeAll();
+    setSessionId(id);
+    setFinishing(false);
+    setPhase("summary");
+  }
+
+  function commitNotes() {
+    if (sessionId) updateSessionNotes({ id: sessionId, notes });
   }
 
   if (phase === "summary") {
@@ -45,9 +56,8 @@ export function ActiveCardioScreen() {
         ]}
         notes={notes}
         onNotesChange={setNotes}
-        onBack={() => setPhase("log")}
-        onSave={save}
-        onDiscard={closeAll}
+        onNotesBlur={commitNotes}
+        onDone={closeAll}
       />
     );
   }
@@ -60,8 +70,9 @@ export function ActiveCardioScreen() {
         right={
           <button
             type="button"
-            onClick={() => setPhase("summary")}
-            className="text-[15px] font-bold text-blue"
+            onClick={handleFinish}
+            disabled={finishing}
+            className="text-[15px] font-bold text-blue disabled:opacity-50"
           >
             Finish
           </button>
