@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { ConfirmDialog } from "@/shared/ui/ConfirmDialog";
+import type { ReactNode } from "react";
 import { SheetHeader } from "@/shared/ui/SheetHeader";
 
 export function WorkoutSummaryScreen({
@@ -10,24 +9,20 @@ export function WorkoutSummaryScreen({
   muscleSection,
   notes,
   onNotesChange,
-  onBack,
-  onSave,
-  onDiscard,
+  onNotesBlur,
+  onDone,
 }: {
   title: string;
   stats: { label: string; value: string; accent?: boolean }[];
   muscleSection?: ReactNode;
   notes: string;
   onNotesChange: (v: string) => void;
-  onBack: () => void;
-  onSave: () => void;
-  onDiscard: () => void;
+  onNotesBlur: () => void;
+  onDone: () => void;
 }) {
-  const [confirmingDiscard, setConfirmingDiscard] = useState(false);
-
   return (
     <div className="p-4">
-      <SheetHeader title="Save workout" onClose={onBack} closeIcon="back" />
+      <SheetHeader title="Workout saved" onClose={onDone} />
       <h2 className="mt-1 mb-3.5 px-0.5 text-[26px] font-extrabold tracking-tight">
         {title}
       </h2>
@@ -66,35 +61,18 @@ export function WorkoutSummaryScreen({
           placeholder="How did it go? Add a note…"
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
+          onBlur={onNotesBlur}
           className="min-h-18.5 w-full rounded-xl border border-line bg-surface px-3.5 py-3 text-base text-ink outline-none focus:border-blue"
         />
       </div>
 
       <button
         type="button"
-        onClick={onSave}
+        onClick={onDone}
         className="w-full rounded-2xl bg-blue py-4 text-[15.5px] font-bold text-white"
       >
-        Save workout
+        Done
       </button>
-      <button
-        type="button"
-        onClick={() => setConfirmingDiscard(true)}
-        className="mx-auto mt-4 block text-[15px] font-semibold text-danger"
-      >
-        Discard workout
-      </button>
-
-      <ConfirmDialog
-        open={confirmingDiscard}
-        danger
-        message="Discard this workout?"
-        onCancel={() => setConfirmingDiscard(false)}
-        onConfirm={() => {
-          setConfirmingDiscard(false);
-          onDiscard();
-        }}
-      />
     </div>
   );
 }
