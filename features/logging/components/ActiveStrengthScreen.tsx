@@ -3,6 +3,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { ExerciseDetailTabs } from "@/features/exercises/components/ExerciseDetailTabs";
 import { ExercisePickerSheet } from "@/features/exercises/components/ExercisePickerSheet";
 import { MusclePanel } from "@/features/exercises/components/MusclePanel";
@@ -28,13 +29,16 @@ export function ActiveStrengthScreen({
 }) {
   const { push, pop, closeAll } = useSheet();
   const finishStrengthSession = useMutation(api.logging.finishStrengthSession);
+  const updateSessionNotes = useMutation(api.logging.updateSessionNotes);
   const customExercises = useQuery(api.exercises.listCustomExercises) ?? [];
 
   const [startTs] = useState(() => Date.now());
   const [exercises, setExercises] = useState<DraftExercise[]>(initialExercises);
   const [phase, setPhase] = useState<"log" | "summary">("log");
   const [notes, setNotes] = useState("");
+  const [sessionId, setSessionId] = useState<Id<"sessions"> | null>(null);
   const [confirmFinish, setConfirmFinish] = useState(false);
+  const [finishing, setFinishing] = useState(false);
   // Snapshotted once at "Finish" so the summary's displayed duration and the
   // saved duration always match, instead of drifting if the user lingers.
   const [finishedDurationSec, setFinishedDurationSec] = useState(0);
@@ -59,7 +63,7 @@ export function ActiveStrengthScreen({
     );
   }
 
-  function proceedFinish(current: DraftExercise[]) {
+  async function proceedFinish(current: DraftExercise[]) {
     const cleaned = current
       .map((ex) => ({ ...ex, sets: ex.sets.filter(hasValue) }))
       .filter((ex) => ex.sets.length > 0);
@@ -67,12 +71,23 @@ export function ActiveStrengthScreen({
       closeAll();
       return;
     }
+    const durationSec = (Date.now() - startTs) / 1000;
+    setFinishing(true);
+    const id = await finishStrengthSession({
+      routineName,
+      exercises: cleaned,
+      durationSec,
+      ts: startTs,
+    });
     setExercises(cleaned);
-    setFinishedDurationSec((Date.now() - startTs) / 1000);
+    setFinishedDurationSec(durationSec);
+    setSessionId(id);
+    setFinishing(false);
     setPhase("summary");
   }
 
   function handleFinish() {
+    if (finishing) return;
     const anyDone = exercises.some((ex) => ex.sets.some((s) => hasValue(s) && !s.warmup && s.done));
     const anyUndone = exercises.some((ex) =>
       ex.sets.some((s) => hasValue(s) && !s.warmup && !s.done)
@@ -84,15 +99,8 @@ export function ActiveStrengthScreen({
     proceedFinish(exercises);
   }
 
-  async function save() {
-    await finishStrengthSession({
-      routineName,
-      exercises,
-      durationSec: finishedDurationSec,
-      notes: notes.trim() || undefined,
-      ts: startTs,
-    });
-    closeAll();
+  function commitNotes() {
+    if (sessionId) updateSessionNotes({ id: sessionId, notes });
   }
 
   if (phase === "summary") {
@@ -133,9 +141,8 @@ export function ActiveStrengthScreen({
         }
         notes={notes}
         onNotesChange={setNotes}
-        onBack={() => setPhase("log")}
-        onSave={save}
-        onDiscard={closeAll}
+        onNotesBlur={commitNotes}
+        onDone={closeAll}
       />
     );
   }
@@ -149,7 +156,8 @@ export function ActiveStrengthScreen({
           <button
             type="button"
             onClick={handleFinish}
-            className="text-[15px] font-bold text-blue"
+            disabled={finishing}
+            className="text-[15px] font-bold text-blue disabled:opacity-50"
           >
             Finish
           </button>
