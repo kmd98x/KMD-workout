@@ -1,12 +1,14 @@
 "use client";
 
-import { usePreloadedQuery, useQuery, type Preloaded } from "convex/react";
+import { useMutation, usePreloadedQuery, useQuery, type Preloaded } from "convex/react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { api } from "@/convex/_generated/api";
 import { ExerciseThumb } from "@/features/exercises/components/ExerciseThumb";
 import { MusclePanel } from "@/features/exercises/components/MusclePanel";
 import { formatDuration, formatFullDate } from "@/shared/lib/date";
-import { BackIcon } from "@/shared/ui/icons";
+import { ConfirmDialog } from "@/shared/ui/ConfirmDialog";
+import { BackIcon, TrashIcon } from "@/shared/ui/icons";
 import { SetTable } from "@/shared/ui/SetTable";
 
 export function SessionDetail({
@@ -16,7 +18,10 @@ export function SessionDetail({
 }) {
   const session = usePreloadedQuery(preloaded);
   const customExercises = useQuery(api.exercises.listCustomExercises) ?? [];
+  const deleteSession = useMutation(api.logging.deleteSession);
   const router = useRouter();
+
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   if (!session) {
     return (
@@ -48,9 +53,17 @@ export function SessionDetail({
         Back
       </button>
 
-      <h1 className="mb-1 text-[24px] font-extrabold tracking-tight">
-        {title}
-      </h1>
+      <div className="mb-1 flex items-center justify-between gap-3">
+        <h1 className="text-[24px] font-extrabold tracking-tight">{title}</h1>
+        <button
+          type="button"
+          aria-label="Delete session"
+          onClick={() => setConfirmingDelete(true)}
+          className="shrink-0 rounded-lg p-3 text-danger cursor-pointer"
+        >
+          <TrashIcon />
+        </button>
+      </div>
       <div className="mb-5 text-[13px] text-muted-2">
         {formatFullDate(session.ts)}
         {session.durationSec ? ` · ${formatDuration(session.durationSec)}` : ""}
@@ -115,6 +128,18 @@ export function SessionDetail({
           />
         </>
       )}
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        danger
+        message={`Delete "${title}"?`}
+        onCancel={() => setConfirmingDelete(false)}
+        onConfirm={async () => {
+          setConfirmingDelete(false);
+          await deleteSession({ id: session._id });
+          router.back();
+        }}
+      />
     </div>
   );
 }

@@ -109,6 +109,29 @@ export const updateSessionNotes = mutation({
   },
 });
 
+/** Deletes a finished session from history and decrements the denormalized
+ * `userStats` counter to match (see schema.ts — sessions are otherwise
+ * insert/patch-only, so this is the one path that shrinks the count). */
+export const deleteSession = mutation({
+  args: { id: v.id("sessions") },
+  handler: async (ctx, { id }) => {
+    const userId = await requireUserId(ctx);
+    const session = await ctx.db.get(id);
+    if (!session || session.userId !== userId) throw new Error("Session not found");
+    await ctx.db.delete(id);
+
+    const stats = await ctx.db
+      .query("userStats")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .unique();
+    if (stats) {
+      await ctx.db.patch(stats._id, {
+        totalSessions: Math.max(0, stats.totalSessions - 1),
+      });
+    }
+  },
+});
+
 export const getSession = query({
   args: { id: v.id("sessions") },
   handler: async (ctx, { id }) => {
