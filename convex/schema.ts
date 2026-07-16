@@ -67,8 +67,8 @@ export default defineSchema({
     .index("by_user_ts", ["userId", "ts"])
     .index("by_user_routineName", ["userId", "routineName"]),
 
-  // --- logging: denormalized per-user counters (sessions are never
-  // deleted, so this only ever needs incrementing on write; per Convex
+  // --- logging: denormalized per-user counters (kept in sync on both
+  // insert and delete of a session — see logging.ts — since per Convex
   // guidelines, `.collect().length` isn't safe once a table can grow
   // unbounded, so the Progress tab's "total sessions" tile reads this
   // instead of scanning every session) ---
