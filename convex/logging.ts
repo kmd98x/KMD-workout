@@ -109,6 +109,50 @@ export const updateSessionNotes = mutation({
   },
 });
 
+/** Lets the session detail screen edit a past strength workout's exercises
+ * and note after the fact (e.g. fixing a typo'd weight). */
+export const updateStrengthSession = mutation({
+  args: {
+    id: v.id("sessions"),
+    exercises: v.array(loggedExercise),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, { id, exercises, notes }) => {
+    const userId = await requireUserId(ctx);
+    const session = await ctx.db.get(id);
+    if (!session || session.userId !== userId) throw new Error("Session not found");
+    if (session.type !== "strength") throw new Error("Not a strength session");
+    const cleaned = stripEmpty(exercises);
+    if (cleaned.length === 0) throw new Error("Workout needs at least one set.");
+    await ctx.db.patch(id, { exercises: cleaned, notes: notes?.trim() || undefined });
+  },
+});
+
+/** Lets the session detail screen edit a past cardio session's type,
+ * duration, intensity, and note after the fact. */
+export const updateCardioSession = mutation({
+  args: {
+    id: v.id("sessions"),
+    cardioType: v.string(),
+    duration: v.number(),
+    intensity: v.string(),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, { id, cardioType, duration, intensity, notes }) => {
+    const userId = await requireUserId(ctx);
+    const session = await ctx.db.get(id);
+    if (!session || session.userId !== userId) throw new Error("Session not found");
+    if (session.type !== "cardio") throw new Error("Not a cardio session");
+    await ctx.db.patch(id, {
+      cardioType,
+      duration,
+      durationSec: duration * 60,
+      intensity,
+      notes: notes?.trim() || undefined,
+    });
+  },
+});
+
 /** Deletes a finished session from history and decrements the denormalized
  * `userStats` counter to match (see schema.ts — sessions are otherwise
  * insert/patch-only, so this is the one path that shrinks the count). */
