@@ -14,6 +14,38 @@ export function BackIcon() {
   );
 }
 
+export function ChevronDownIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5.5 w-5.5"
+    >
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
+
+export function ChevronUpIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5 shrink-0 text-muted-2"
+    >
+      <path d="M6 15l6-6 6 6" />
+    </svg>
+  );
+}
+
 export function CloseIcon() {
   return (
     <svg

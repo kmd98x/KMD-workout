@@ -16,7 +16,7 @@ export function SheetHeader({
 }) {
   return (
     <div className="sticky top-0 z-10 flex items-center justify-between gap-2.5 bg-bg py-4">
-      <div className="flex w-11 justify-start">{right}</div>
+      <div className="flex min-w-11 items-center justify-start gap-1">{right}</div>
       <h2 className="flex-1 truncate text-center text-[19px] font-bold">{title}</h2>
       <button
         type="button"

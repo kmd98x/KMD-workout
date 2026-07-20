@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ActiveWorkoutProvider } from "@/features/logging/context/ActiveWorkoutContext";
 import { BottomNav } from "@/shared/ui/BottomNav";
 import { ConvexClientProvider } from "@/shared/ui/ConvexClientProvider";
 import { InstallPrompt } from "@/shared/ui/InstallPrompt";
@@ -49,10 +50,12 @@ export default function RootLayout({
 					<InstallPrompt />
 					<ConvexClientProvider>
 						<SheetHost>
-							<div className="mx-auto w-full max-w-130 px-4.5 pt-5 pb-30 md:max-w-180 lg:max-w-250 xl:max-w-280">
-								{children}
-							</div>
-							<BottomNav />
+							<ActiveWorkoutProvider>
+								<div className="mx-auto w-full max-w-130 px-4.5 pt-5 pb-30 md:max-w-180 lg:max-w-250 xl:max-w-280">
+									{children}
+								</div>
+								<BottomNav />
+							</ActiveWorkoutProvider>
 						</SheetHost>
 					</ConvexClientProvider>
 				</body>
