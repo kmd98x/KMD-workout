@@ -6,9 +6,12 @@ import { useState } from "react";
 import { api } from "@/convex/_generated/api";
 import { ExerciseThumb } from "@/features/exercises/components/ExerciseThumb";
 import { MusclePanel } from "@/features/exercises/components/MusclePanel";
+import { SessionEditorSheet } from "@/features/logging/editors/SessionEditorSheet";
 import { formatDuration, formatFullDate } from "@/shared/lib/date";
+import { computeSessionVolume } from "@/shared/lib/volume";
 import { ConfirmDialog } from "@/shared/ui/ConfirmDialog";
 import { BackIcon, TrashIcon } from "@/shared/ui/icons";
+import { useSheet } from "@/shared/ui/SheetHost";
 import { SetTable } from "@/shared/ui/SetTable";
 
 export function SessionDetail({
@@ -20,6 +23,7 @@ export function SessionDetail({
   const customExercises = useQuery(api.exercises.listCustomExercises) ?? [];
   const deleteSession = useMutation(api.logging.deleteSession);
   const router = useRouter();
+  const { push } = useSheet();
 
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -41,6 +45,10 @@ export function SessionDetail({
   const hasMuscleData =
     session.type === "strength" &&
     (session.exercises ?? []).some((ex) => !ex.cardio);
+  const volume =
+    session.type === "strength"
+      ? computeSessionVolume(session.exercises ?? [])
+      : 0;
 
   return (
     <div className="pt-2">
@@ -55,18 +63,28 @@ export function SessionDetail({
 
       <div className="mb-1 flex items-center justify-between gap-3">
         <h1 className="text-[24px] font-extrabold tracking-tight">{title}</h1>
-        <button
-          type="button"
-          aria-label="Delete session"
-          onClick={() => setConfirmingDelete(true)}
-          className="shrink-0 rounded-lg p-3 text-danger cursor-pointer"
-        >
-          <TrashIcon />
-        </button>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={() => push("session-editor", <SessionEditorSheet session={session} />)}
+            className="rounded-lg px-2 py-2 text-sm font-bold text-blue cursor-pointer"
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            aria-label="Delete session"
+            onClick={() => setConfirmingDelete(true)}
+            className="rounded-lg p-3 text-danger cursor-pointer"
+          >
+            <TrashIcon />
+          </button>
+        </div>
       </div>
       <div className="mb-5 text-[13px] text-muted-2">
         {formatFullDate(session.ts)}
         {session.durationSec ? ` · ${formatDuration(session.durationSec)}` : ""}
+        {volume > 0 ? ` · ${Math.round(volume * 10) / 10} kg volume` : ""}
       </div>
 
       {session.type === "strength" ? (
