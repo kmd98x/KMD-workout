@@ -6,15 +6,21 @@ export function Sheet({
   open,
   onClose,
   children,
+  zIndex = 40,
 }: {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
+  /** Stacking order relative to other fixed overlays (e.g. BottomNav at
+   * z-30) — lets a caller render its own Sheet instance below the shared
+   * SheetHost one so that gets pushed on top of it. */
+  zIndex?: number;
 }) {
   return (
     <div
       aria-hidden={!open}
-      className={`fixed inset-0 z-40 transition-opacity duration-200 md:bg-black/60 md:backdrop-blur-sm ${
+      style={{ zIndex }}
+      className={`fixed inset-0 transition-opacity duration-200 md:bg-black/60 md:backdrop-blur-sm ${
         open ? "opacity-100" : "pointer-events-none opacity-0"
       }`}
       onClick={(e) => {

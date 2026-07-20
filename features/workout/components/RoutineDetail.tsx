@@ -7,6 +7,7 @@ import { api } from "@/convex/_generated/api";
 import { ExerciseThumb } from "@/features/exercises/components/ExerciseThumb";
 import { MusclePanel } from "@/features/exercises/components/MusclePanel";
 import { ActiveStrengthScreen } from "@/features/logging/components/ActiveStrengthScreen";
+import { useActiveWorkout } from "@/features/logging/context/ActiveWorkoutContext";
 import { ConfirmDialog } from "@/shared/ui/ConfirmDialog";
 import { BackIcon } from "@/shared/ui/icons";
 import { useSheet } from "@/shared/ui/SheetHost";
@@ -23,6 +24,7 @@ export function RoutineDetail({
   const customExercises = useQuery(api.exercises.listCustomExercises) ?? [];
   const deleteRoutine = useMutation(api.workout.deleteRoutine);
   const { push } = useSheet();
+  const { start } = useActiveWorkout();
   const router = useRouter();
 
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -40,11 +42,11 @@ export function RoutineDetail({
   );
 
   return (
-    <div className="pt-2">
+    <div className="pt-14 md:pt-2">
       <button
         type="button"
         onClick={() => router.push("/")}
-        className="mb-2 -ml-1.5 flex items-center gap-1 rounded-lg px-1.5 py-2 text-[15px] font-semibold text-muted"
+        className="fixed top-[calc(env(safe-area-inset-top)+10px)] left-3 z-20 flex items-center gap-1 rounded-full bg-surface/90 px-3 py-2 text-[14px] font-semibold text-muted shadow-md backdrop-blur-md md:static md:top-auto md:left-auto md:z-auto md:mb-2 md:-ml-1.5 md:rounded-lg md:bg-transparent md:px-1.5 md:py-2 md:text-[15px] md:shadow-none md:backdrop-blur-none"
       >
         <BackIcon />
         Workout
@@ -56,18 +58,20 @@ export function RoutineDetail({
 
       <button
         type="button"
-        onClick={() =>
-          push(
-            "active-strength",
+        onClick={() => {
+          const startTs = Date.now();
+          start(
+            { title: routine.name, startTs },
             <ActiveStrengthScreen
               routineName={routine.name}
+              startTs={startTs}
               initialExercises={routine.exercises.map((ex) => ({
                 ...ex,
                 sets: ex.sets.map((s) => ({ ...s, done: false })),
               }))}
             />
-          )
-        }
+          );
+        }}
         className="mb-5 w-full rounded-2xl bg-blue py-4 text-[15.5px] font-bold text-white"
       >
         Start routine

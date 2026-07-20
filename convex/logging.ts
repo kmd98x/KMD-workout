@@ -17,6 +17,7 @@ const loggedExercise = v.object({
   name: v.string(),
   cardio: v.boolean(),
   sets: v.array(loggedSet),
+  notes: v.optional(v.string()),
 });
 
 function hasValue(s: { weight?: string; reps?: string; min?: string }) {
@@ -27,7 +28,11 @@ function hasValue(s: { weight?: string; reps?: string; min?: string }) {
  * showing the summary screen, but the mutation re-strips too. */
 function stripEmpty(exercises: Infer<typeof loggedExercise>[]) {
   return exercises
-    .map((ex) => ({ ...ex, sets: ex.sets.filter(hasValue) }))
+    .map((ex) => ({
+      ...ex,
+      sets: ex.sets.filter(hasValue),
+      notes: ex.notes?.trim() || undefined,
+    }))
     .filter((ex) => ex.sets.length > 0);
 }
 
