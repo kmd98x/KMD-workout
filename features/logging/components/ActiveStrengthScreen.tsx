@@ -105,14 +105,12 @@ export function ActiveStrengthScreen({
 
   function handleFinish() {
     if (finishing) return;
-    // Only nag when the workout is a *mix* of checked and unchecked sets —
-    // finishing with nothing checked at all (e.g. bailing on a routine) or
-    // everything checked shouldn't need a confirmation.
+    // Warn whenever any set across the whole workout is left unchecked, so a
+    // routine can't be finished with sets silently skipped.
     const realSets = exercises.flatMap((ex) => ex.sets.filter(hasValue).map((s) => ({ ex, s })));
-    const anyChecked = realSets.some(({ s }) => s.done);
     const anyUnchecked = realSets.some(({ s }) => !s.done);
     const anyIncompleteData = realSets.some(({ ex, s }) => hasIncompleteData(ex, s));
-    const incomplete = (anyChecked && anyUnchecked) || anyIncompleteData;
+    const incomplete = anyUnchecked || anyIncompleteData;
     if (incomplete) {
       setConfirmFinish(true);
       return;
