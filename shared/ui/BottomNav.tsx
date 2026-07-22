@@ -2,75 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Dumbbell, LineChart, BarChart3 } from "lucide-react";
 
 const TABS = [
 	{
 		href: "/",
 		label: "Workout",
-		icon: (
-			<svg
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				strokeWidth={1.8}
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			>
-				<path d="M6.5 6.5l11 11" />
-				<rect
-					x="1.7"
-					y="8.2"
-					width="3.5"
-					height="7.6"
-					rx="1"
-					transform="rotate(-45 3.4 12)"
-				/>
-				<rect
-					x="18.8"
-					y="8.2"
-					width="3.5"
-					height="7.6"
-					rx="1"
-					transform="rotate(-45 20.6 12)"
-				/>
-			</svg>
-		),
+		icon: <Dumbbell strokeWidth={1.8} />,
 	},
 	{
 		href: "/progress",
 		label: "Progress",
-		icon: (
-			<svg
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				strokeWidth={1.8}
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			>
-				<path d="M4 19V5" />
-				<path d="M4 19h16" />
-				<path d="M8 15l4-5 3 3 4-6" />
-			</svg>
-		),
+		icon: <LineChart strokeWidth={1.8} />,
 	},
 	{
 		href: "/stats",
 		label: "Statistics",
-		icon: (
-			<svg
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				strokeWidth={1.8}
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			>
-				<rect x="3" y="12" width="4" height="8" rx="1" />
-				<rect x="10" y="7" width="4" height="13" rx="1" />
-				<rect x="17" y="4" width="4" height="16" rx="1" />
-			</svg>
-		),
+		icon: <BarChart3 strokeWidth={1.8} />,
 	},
 ] as const;
 
