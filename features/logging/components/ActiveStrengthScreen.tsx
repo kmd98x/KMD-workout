@@ -22,6 +22,16 @@ function hasValue(s: DraftSet): boolean {
   return Boolean(s.reps || s.weight || s.min);
 }
 
+/** A checked-off set (so it's meant to be done) that's still missing its
+ * weight or rep count — a checked box with half-typed data is more likely a
+ * stray tap than an intentional bodyweight/no-load set, so this is flagged
+ * regardless of how many other sets are checked. Cardio sets have no
+ * weight/reps concept, and warm-ups aren't always logged with exact
+ * numbers, so neither is held to this. */
+function hasIncompleteData(ex: DraftExercise, s: DraftSet): boolean {
+  return hasValue(s) && Boolean(s.done) && !ex.cardio && !s.warmup && (!s.reps || !s.weight);
+}
+
 export function ActiveStrengthScreen({
   initialExercises,
   routineName,
@@ -95,11 +105,15 @@ export function ActiveStrengthScreen({
 
   function handleFinish() {
     if (finishing) return;
-    const anyDone = exercises.some((ex) => ex.sets.some((s) => hasValue(s) && !s.warmup && s.done));
-    const anyUndone = exercises.some((ex) =>
-      ex.sets.some((s) => hasValue(s) && !s.warmup && !s.done)
-    );
-    if (anyDone && anyUndone) {
+    // Only nag when the workout is a *mix* of checked and unchecked sets —
+    // finishing with nothing checked at all (e.g. bailing on a routine) or
+    // everything checked shouldn't need a confirmation.
+    const realSets = exercises.flatMap((ex) => ex.sets.filter(hasValue).map((s) => ({ ex, s })));
+    const anyChecked = realSets.some(({ s }) => s.done);
+    const anyUnchecked = realSets.some(({ s }) => !s.done);
+    const anyIncompleteData = realSets.some(({ ex, s }) => hasIncompleteData(ex, s));
+    const incomplete = (anyChecked && anyUnchecked) || anyIncompleteData;
+    if (incomplete) {
       setConfirmFinish(true);
       return;
     }
@@ -213,7 +227,7 @@ export function ActiveStrengthScreen({
 
       <ConfirmDialog
         open={confirmFinish}
-        message="You haven't checked off all your sets. Finish anyway?"
+        message="Some sets aren't checked off, or are missing a weight or rep count. Finish anyway?"
         onCancel={() => setConfirmFinish(false)}
         onConfirm={() => {
           setConfirmFinish(false);

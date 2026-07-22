@@ -33,7 +33,7 @@ export function StrengthPerExerciseChart() {
         <select
           value={current}
           onChange={(e) => setSelected(e.target.value)}
-          className="mb-3.5 w-full rounded-xl border border-line bg-surface-2 px-3.5 py-2.5 text-[14px] text-ink outline-none focus:border-blue"
+          className="mb-3.5 w-full rounded-xl border border-line bg-surface-2 px-3.5 py-2.5 text-base text-ink outline-none focus:border-blue"
         >
           {strengthNames.map((n) => (
             <option key={n} value={n}>

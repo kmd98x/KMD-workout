@@ -52,7 +52,7 @@ export function MeasurementsTab() {
         <select
           value={metric}
           onChange={(e) => setMetric(e.target.value as FieldKey)}
-          className="rounded-lg bg-surface-2 px-2.5 py-1.5 text-[13px] text-ink outline-none focus:border-blue"
+          className="rounded-lg bg-surface-2 px-2.5 py-1.5 text-base text-ink outline-none focus:border-blue"
         >
           {FIELDS.map((f) => (
             <option key={f.key} value={f.key}>

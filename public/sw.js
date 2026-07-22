@@ -1,4 +1,4 @@
-const CACHE_NAME = "workout-shell-v1";
+const CACHE_NAME = "workout-shell-v2";
 
 const PRECACHE_URLS = [
   "/",

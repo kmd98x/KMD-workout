@@ -115,7 +115,7 @@ export function SetBlock({
           placeholder="Add notes here…"
           value={exercise.notes ?? ""}
           onChange={(e) => onChange({ ...exercise, notes: e.target.value })}
-          className="mb-2.5 w-full resize-none bg-transparent text-[13px] text-muted outline-none placeholder:text-muted-2"
+          className="mb-2.5 w-full resize-none bg-transparent text-base text-muted outline-none placeholder:text-muted-2"
         />
       )}
 
