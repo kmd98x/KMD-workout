@@ -23,6 +23,9 @@ html,
 body {
   overflow-x: hidden;
   max-width: 100vw;
+  /* Blocks double-tap-to-zoom so taps register instantly, like a native app.
+     Pinch zoom on iOS is handled separately in DisableZoom. */
+  touch-action: manipulation;
 }
 
 body {

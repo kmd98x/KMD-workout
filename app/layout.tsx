@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ActiveWorkoutProvider } from "@/features/logging/context/ActiveWorkoutContext";
 import { BottomNav } from "@/shared/ui/BottomNav";
 import { ConvexClientProvider } from "@/shared/ui/ConvexClientProvider";
+import { DisableZoom } from "@/shared/ui/DisableZoom";
 import { InstallPrompt } from "@/shared/ui/InstallPrompt";
 import { ServiceWorkerRegister } from "@/shared/ui/ServiceWorkerRegister";
 import { SheetHost } from "@/shared/ui/SheetHost";
@@ -51,6 +52,7 @@ export default function RootLayout({
 			>
 				<body className="min-h-full bg-bg text-ink">
 					<ServiceWorkerRegister />
+					<DisableZoom />
 					<InstallPrompt />
 					<ConvexClientProvider>
 						<SheetHost>
