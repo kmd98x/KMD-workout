@@ -4,6 +4,7 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { usePreloadedQuery, useQuery, type Preloaded } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { ActiveStrengthScreen } from "@/features/logging/components/ActiveStrengthScreen";
+import { useActiveWorkout } from "@/features/logging/context/ActiveWorkoutContext";
 import { startOfWeek } from "@/shared/lib/date";
 import { useSheet } from "@/shared/ui/SheetHost";
 import { FolderEditorSheet } from "../editors/FolderEditorSheet";
@@ -23,6 +24,7 @@ export function WorkoutHome({
     weekStartTs: startOfWeek().getTime(),
   });
   const { push } = useSheet();
+  const { start } = useActiveWorkout();
   const { signOut } = useAuthActions();
 
   const folderIds = new Set(data.folders.map((f) => f._id));
@@ -53,12 +55,13 @@ export function WorkoutHome({
           />
           <div className="mt-2">
             <QuickStartButton
-              onClick={() =>
-                push(
-                  "active-strength",
-                  <ActiveStrengthScreen initialExercises={[]} />
-                )
-              }
+              onClick={() => {
+                const startTs = Date.now();
+                start(
+                  { title: "Workout", startTs },
+                  <ActiveStrengthScreen initialExercises={[]} startTs={startTs} />
+                );
+              }}
             />
           </div>
         </div>

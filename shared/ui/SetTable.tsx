@@ -10,6 +10,12 @@ export function SetTable({
 }) {
   const cols = cardio ? "grid-cols-[52px_1fr]" : "grid-cols-[52px_1fr_1fr]";
 
+  // Working sets are numbered on their own — warm-ups don't take a number,
+  // so the first real set always starts at 1 regardless of how many
+  // warm-ups come before it (matches SetBlock's numbering while editing).
+  let workingCount = 0;
+  const workingSetNumber = sets.map((s) => (s.warmup ? null : ++workingCount));
+
   return (
     <div>
       <div
@@ -27,7 +33,7 @@ export function SetTable({
           } ${s.warmup ? "opacity-60" : ""}`}
         >
           <span className={`font-bold ${s.warmup ? "text-orange" : "text-ink"}`}>
-            {s.warmup ? "W" : i + 1}
+            {s.warmup ? "W" : workingSetNumber[i]}
           </span>
           {cardio ? (
             <span className="text-muted">{s.min || "–"}</span>

@@ -100,6 +100,9 @@ export function SessionDetail({
                 {ex.name}
               </span>
             </button>
+            {ex.notes && (
+              <p className="mb-2 text-[12.5px] text-muted-2">{ex.notes}</p>
+            )}
             <SetTable sets={ex.sets} cardio={ex.cardio} />
           </div>
         ))

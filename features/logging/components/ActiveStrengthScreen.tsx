@@ -10,9 +10,11 @@ import { MusclePanel } from "@/features/exercises/components/MusclePanel";
 import { useExerciseHistory } from "@/features/exercises/hooks/useExerciseHistory";
 import { formatDuration } from "@/shared/lib/date";
 import { ConfirmDialog } from "@/shared/ui/ConfirmDialog";
+import { ChevronDownIcon } from "@/shared/ui/icons";
 import { SetBlock, type DraftExercise, type DraftSet } from "@/shared/ui/SetBlock";
 import { SheetHeader } from "@/shared/ui/SheetHeader";
 import { useSheet } from "@/shared/ui/SheetHost";
+import { useActiveWorkout } from "../context/ActiveWorkoutContext";
 import { ElapsedTimer } from "./ElapsedTimer";
 import { WorkoutSummaryScreen } from "./WorkoutSummaryScreen";
 
@@ -23,16 +25,21 @@ function hasValue(s: DraftSet): boolean {
 export function ActiveStrengthScreen({
   initialExercises,
   routineName,
+  startTs,
 }: {
   initialExercises: DraftExercise[];
   routineName?: string;
+  /** Generated once by the caller when it starts this workout via
+   * `useActiveWorkout().start()`, so the mini-bar's timer and this screen's
+   * timer read from the same source instead of drifting apart. */
+  startTs: number;
 }) {
-  const { push, pop, closeAll } = useSheet();
+  const { push, pop } = useSheet();
+  const { minimize, end } = useActiveWorkout();
   const finishStrengthSession = useMutation(api.logging.finishStrengthSession);
   const updateSessionNotes = useMutation(api.logging.updateSessionNotes);
   const customExercises = useQuery(api.exercises.listCustomExercises) ?? [];
 
-  const [startTs] = useState(() => Date.now());
   const [exercises, setExercises] = useState<DraftExercise[]>(initialExercises);
   const [phase, setPhase] = useState<"log" | "summary">("log");
   const [notes, setNotes] = useState("");
@@ -68,7 +75,7 @@ export function ActiveStrengthScreen({
       .map((ex) => ({ ...ex, sets: ex.sets.filter(hasValue) }))
       .filter((ex) => ex.sets.length > 0);
     if (cleaned.length === 0) {
-      closeAll();
+      end();
       return;
     }
     const durationSec = (Date.now() - startTs) / 1000;
@@ -142,7 +149,7 @@ export function ActiveStrengthScreen({
         notes={notes}
         onNotesChange={setNotes}
         onNotesBlur={commitNotes}
-        onDone={closeAll}
+        onDone={end}
       />
     );
   }
@@ -151,16 +158,26 @@ export function ActiveStrengthScreen({
     <div className="p-4">
       <SheetHeader
         title={routineName ?? "Workout"}
-        onClose={closeAll}
+        onClose={end}
         right={
-          <button
-            type="button"
-            onClick={handleFinish}
-            disabled={finishing}
-            className="text-[15px] font-bold text-blue disabled:opacity-50"
-          >
-            Finish
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={minimize}
+              aria-label="Minimize workout"
+              className="flex items-center justify-center p-1.5 text-ink"
+            >
+              <ChevronDownIcon />
+            </button>
+            <button
+              type="button"
+              onClick={handleFinish}
+              disabled={finishing}
+              className="text-[15px] font-bold text-blue disabled:opacity-50"
+            >
+              Finish
+            </button>
+          </>
         }
       />
       <ElapsedTimer startTs={startTs} />

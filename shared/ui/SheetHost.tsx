@@ -142,7 +142,7 @@ export function SheetHost({ children }: { children: ReactNode }) {
           <div
             key={entry.key}
             hidden={i !== stack.length - 1}
-            className="max-h-[92vh] overflow-y-auto overscroll-contain md:max-h-[88vh]"
+            className="max-h-[92dvh] overflow-y-auto overscroll-contain md:max-h-[88dvh]"
           >
             {entry.content}
           </div>

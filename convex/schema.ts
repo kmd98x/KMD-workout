@@ -27,6 +27,7 @@ const loggedExercise = v.object({
   name: v.string(),
   cardio: v.boolean(),
   sets: v.array(loggedSet),
+  notes: v.optional(v.string()),
 });
 
 export default defineSchema({
