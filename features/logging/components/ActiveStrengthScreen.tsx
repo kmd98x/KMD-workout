@@ -34,10 +34,12 @@ function hasIncompleteData(ex: DraftExercise, s: DraftSet): boolean {
 
 export function ActiveStrengthScreen({
   initialExercises,
+  routineId,
   routineName,
   startTs,
 }: {
   initialExercises: DraftExercise[];
+  routineId?: Id<"routines">;
   routineName?: string;
   /** Generated once by the caller when it starts this workout via
    * `useActiveWorkout().start()`, so the mini-bar's timer and this screen's
@@ -91,6 +93,7 @@ export function ActiveStrengthScreen({
     const durationSec = (Date.now() - startTs) / 1000;
     setFinishing(true);
     const id = await finishStrengthSession({
+      routineId,
       routineName,
       exercises: cleaned,
       durationSec,
