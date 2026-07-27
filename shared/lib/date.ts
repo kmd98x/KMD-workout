@@ -7,6 +7,22 @@ export function startOfWeek(d: Date = new Date()): Date {
   return out;
 }
 
+/** The 1st of the month containing `d`, at local midnight. */
+export function startOfMonth(d: Date = new Date()): Date {
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
+
+/** `d`'s month shifted by `n` (negative goes back) — `Date`'s own
+ * month-rollover handles year boundaries. */
+export function addMonths(d: Date, n: number): Date {
+  return new Date(d.getFullYear(), d.getMonth() + n, 1);
+}
+
+/** How many days are in the month containing `d`. */
+export function daysInMonth(d: Date): number {
+  return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+}
+
 /** Calendar-day key, stable across timezones for same-day comparisons. */
 export function todayKey(d: Date = new Date()): string {
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
@@ -76,4 +92,15 @@ export function formatWeekRange(weekStartTs: number): string {
   const start = new Date(weekStartTs);
   const end = new Date(weekStartTs + 6 * 86400000);
   return `${start.getDate()} ${MONTH_NAMES[start.getMonth()]} – ${end.getDate()} ${MONTH_NAMES[end.getMonth()]}`;
+}
+
+const MONTH_NAMES_FULL = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+/** "July 2026" for the Workout home screen's month overview header. */
+export function formatMonthTitle(monthStartTs: number): string {
+  const d = new Date(monthStartTs);
+  return `${MONTH_NAMES_FULL[d.getMonth()]} ${d.getFullYear()}`;
 }
