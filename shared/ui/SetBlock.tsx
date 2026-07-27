@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { ExerciseThumb } from "@/features/exercises/components/ExerciseThumb";
 import { CheckIcon, ClockIcon } from "./icons";
 import { SwipeToDelete } from "./SwipeToDelete";
@@ -32,9 +33,12 @@ export function SetBlock({
   exercise,
   mode,
   previousSets,
+  position,
   onChange,
   onRemove,
   onOpenDetail,
+  onMoveUp,
+  onMoveDown,
 }: {
   exercise: DraftExercise;
   mode: "routine" | "log";
@@ -42,9 +46,18 @@ export function SetBlock({
    * reference line and input placeholders. `null` = checked, no history
    * yet. `undefined` = not applicable (e.g. routine editor). */
   previousSets?: DraftSet[] | null;
+  /** This exercise's 1-based position among its siblings, and how many
+   * there are — shown as a "3 of 7" style number badge. Only meaningful
+   * where exercises have a stable, user-visible order (the routine
+   * editor); omitted elsewhere. */
+  position?: { index: number; total: number };
   onChange: (next: DraftExercise) => void;
   onRemove: () => void;
   onOpenDetail?: () => void;
+  /** Reorder this exercise relative to its siblings. Omit either to
+   * disable that direction (e.g. the first exercise has no onMoveUp). */
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }) {
   function updateSet(i: number, patch: Partial<DraftSet>) {
     const sets = exercise.sets.map((s, idx) =>
@@ -88,6 +101,11 @@ export function SetBlock({
   return (
     <div className="mb-3 rounded-card bg-surface p-4">
       <div className="mb-2 flex items-center gap-3">
+        {position && (
+          <span className="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[11px] font-bold text-muted-2">
+            {position.index + 1}
+          </span>
+        )}
         <button
           type="button"
           onClick={onOpenDetail}
@@ -99,6 +117,28 @@ export function SetBlock({
             {exercise.name}
           </span>
         </button>
+        {(onMoveUp || onMoveDown) && (
+          <div className="flex shrink-0 items-center">
+            <button
+              type="button"
+              onClick={onMoveUp}
+              disabled={!onMoveUp}
+              aria-label={`Move ${exercise.name} up`}
+              className="p-1 text-muted-2 disabled:opacity-25"
+            >
+              <ChevronUp className="h-4.5 w-4.5" strokeWidth={2} />
+            </button>
+            <button
+              type="button"
+              onClick={onMoveDown}
+              disabled={!onMoveDown}
+              aria-label={`Move ${exercise.name} down`}
+              className="p-1 text-muted-2 disabled:opacity-25"
+            >
+              <ChevronDown className="h-4.5 w-4.5" strokeWidth={2} />
+            </button>
+          </div>
+        )}
         <button
           type="button"
           onClick={onRemove}
