@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { GripVertical } from "lucide-react";
+import { forwardRef } from "react";
 import { ExerciseThumb } from "@/features/exercises/components/ExerciseThumb";
 import { CheckIcon, ClockIcon } from "./icons";
 import { SwipeToDelete } from "./SwipeToDelete";
@@ -29,36 +30,47 @@ export type DraftExercise = {
  * exercise, and a per-exercise note). Pure prop-driven — no data fetching —
  * so it has no feature of its own and lives in shared/ui.
  */
-export function SetBlock({
-  exercise,
-  mode,
-  previousSets,
-  position,
-  onChange,
-  onRemove,
-  onOpenDetail,
-  onMoveUp,
-  onMoveDown,
-}: {
-  exercise: DraftExercise;
-  mode: "routine" | "log";
-  /** Most recent completed sets for this exercise, for the "last time"
-   * reference line and input placeholders. `null` = checked, no history
-   * yet. `undefined` = not applicable (e.g. routine editor). */
-  previousSets?: DraftSet[] | null;
-  /** This exercise's 1-based position among its siblings, and how many
-   * there are — shown as a "3 of 7" style number badge. Only meaningful
-   * where exercises have a stable, user-visible order (the routine
-   * editor); omitted elsewhere. */
-  position?: { index: number; total: number };
-  onChange: (next: DraftExercise) => void;
-  onRemove: () => void;
-  onOpenDetail?: () => void;
-  /** Reorder this exercise relative to its siblings. Omit either to
-   * disable that direction (e.g. the first exercise has no onMoveUp). */
-  onMoveUp?: () => void;
-  onMoveDown?: () => void;
-}) {
+export const SetBlock = forwardRef<
+  HTMLDivElement,
+  {
+    exercise: DraftExercise;
+    mode: "routine" | "log";
+    /** Most recent completed sets for this exercise, for the "last time"
+     * reference line and input placeholders. `null` = checked, no history
+     * yet. `undefined` = not applicable (e.g. routine editor). */
+    previousSets?: DraftSet[] | null;
+    /** This exercise's 1-based position among its siblings — shown as a
+     * small number badge. Only meaningful where exercises have a stable,
+     * user-visible order (the routine editor); omitted elsewhere. */
+    position?: { index: number };
+    onChange: (next: DraftExercise) => void;
+    onRemove: () => void;
+    onOpenDetail?: () => void;
+    /** Press-and-hold the grip handle to start dragging this row to
+     * reorder it. Presence of this prop is what shows the handle. */
+    onDragHandlePointerDown?: (e: React.PointerEvent) => void;
+    /** True while this row is the one currently being dragged — collapses
+     * it to just the header and lifts it above its siblings. */
+    dragging?: boolean;
+    /** Pixel offset applied via transform while dragging, so the row
+     * visually follows the pointer. */
+    dragOffsetY?: number;
+  }
+>(function SetBlock(
+  {
+    exercise,
+    mode,
+    previousSets,
+    position,
+    onChange,
+    onRemove,
+    onOpenDetail,
+    onDragHandlePointerDown,
+    dragging,
+    dragOffsetY,
+  },
+  ref
+) {
   function updateSet(i: number, patch: Partial<DraftSet>) {
     const sets = exercise.sets.map((s, idx) =>
       idx === i ? { ...s, ...patch } : s
@@ -99,8 +111,26 @@ export function SetBlock({
   const setCols = showPrevious ? "grid-cols-[24px_1fr_1fr_1fr_32px]" : "grid-cols-[24px_1fr_1fr_32px]";
 
   return (
-    <div className="mb-3 rounded-card bg-surface p-4">
+    <div
+      ref={ref}
+      style={
+        dragging
+          ? { transform: `translateY(${dragOffsetY ?? 0}px)`, position: "relative", zIndex: 30 }
+          : undefined
+      }
+      className={`mb-3 rounded-card bg-surface p-4 ${dragging ? "shadow-lg" : ""}`}
+    >
       <div className="mb-2 flex items-center gap-3">
+        {onDragHandlePointerDown && (
+          <button
+            type="button"
+            onPointerDown={onDragHandlePointerDown}
+            aria-label={`Reorder ${exercise.name}`}
+            className="touch-none p-1 text-muted-2 active:cursor-grabbing"
+          >
+            <GripVertical className="h-4.5 w-4.5" strokeWidth={2} />
+          </button>
+        )}
         {position && (
           <span className="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[11px] font-bold text-muted-2">
             {position.index + 1}
@@ -117,28 +147,6 @@ export function SetBlock({
             {exercise.name}
           </span>
         </button>
-        {(onMoveUp || onMoveDown) && (
-          <div className="flex shrink-0 items-center">
-            <button
-              type="button"
-              onClick={onMoveUp}
-              disabled={!onMoveUp}
-              aria-label={`Move ${exercise.name} up`}
-              className="p-1 text-muted-2 disabled:opacity-25"
-            >
-              <ChevronUp className="h-4.5 w-4.5" strokeWidth={2} />
-            </button>
-            <button
-              type="button"
-              onClick={onMoveDown}
-              disabled={!onMoveDown}
-              aria-label={`Move ${exercise.name} down`}
-              className="p-1 text-muted-2 disabled:opacity-25"
-            >
-              <ChevronDown className="h-4.5 w-4.5" strokeWidth={2} />
-            </button>
-          </div>
-        )}
         <button
           type="button"
           onClick={onRemove}
@@ -149,7 +157,7 @@ export function SetBlock({
         </button>
       </div>
 
-      {mode === "log" && (
+      {!dragging && mode === "log" && (
         <textarea
           rows={1}
           placeholder="Add notes here…"
@@ -159,7 +167,7 @@ export function SetBlock({
         />
       )}
 
-      {exercise.cardio ? (
+      {!dragging && (exercise.cardio ? (
         <>
           <div className="mb-1.5 grid grid-cols-[24px_1fr_32px] gap-2 px-0.5 text-[10.5px] font-bold uppercase tracking-wide text-muted-2">
             <span className="text-center">Set</span>
@@ -287,15 +295,18 @@ export function SetBlock({
             );
           })}
         </>
-      )}
+      ))}
 
-      <button
-        type="button"
-        onClick={addSet}
-        className="mt-1 w-full rounded-[10px] bg-surface-2 py-2.5 text-[13px] font-bold text-blue"
-      >
-        + Set
-      </button>
+      {!dragging && (
+        <button
+          type="button"
+          onClick={addSet}
+          className="mt-1 w-full rounded-[10px] bg-surface-2 py-2.5 text-[13px] font-bold text-blue"
+        >
+          + Set
+        </button>
+      )}
     </div>
   );
-}
+});
+SetBlock.displayName = "SetBlock";
