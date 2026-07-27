@@ -63,6 +63,7 @@ export function RoutineDetail({
           start(
             { title: routine.name, startTs },
             <ActiveStrengthScreen
+              routineId={routine._id}
               routineName={routine.name}
               startTs={startTs}
               initialExercises={routine.exercises.map((ex) => ({

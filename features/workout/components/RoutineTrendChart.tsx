@@ -66,7 +66,7 @@ function valueOf(metric: Metric, session: Doc<"sessions">) {
 export function RoutineTrendChart({ routine }: { routine: Doc<"routines"> }) {
   const [metric, setMetric] = useState<Metric>("volume");
   const sessions = useQuery(api.logging.getRoutineSessions, {
-    routineName: routine.name,
+    routineId: routine._id,
   });
 
   if (sessions === undefined) {

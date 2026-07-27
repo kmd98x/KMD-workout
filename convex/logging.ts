@@ -2,7 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { paginationOptsValidator } from "convex/server";
 import { v, type Infer } from "convex/values";
 import type { Id } from "./_generated/dataModel";
-import { mutation, query, type MutationCtx } from "./_generated/server";
+import { internalMutation, mutation, query, type MutationCtx } from "./_generated/server";
 import { requireUserId } from "./lib/auth";
 
 const loggedSet = v.object({
@@ -52,13 +52,14 @@ async function incrementSessionCount(ctx: MutationCtx, userId: Id<"users">) {
 
 export const finishStrengthSession = mutation({
   args: {
+    routineId: v.optional(v.id("routines")),
     routineName: v.optional(v.string()),
     exercises: v.array(loggedExercise),
     durationSec: v.number(),
     notes: v.optional(v.string()),
     ts: v.number(),
   },
-  handler: async (ctx, { routineName, exercises, durationSec, notes, ts }) => {
+  handler: async (ctx, { routineId, routineName, exercises, durationSec, notes, ts }) => {
     const userId = await requireUserId(ctx);
     const cleaned = stripEmpty(exercises);
     if (cleaned.length === 0) throw new Error("Nothing to save.");
@@ -68,6 +69,7 @@ export const finishStrengthSession = mutation({
       ts,
       durationSec,
       notes: notes?.trim() || undefined,
+      routineId,
       routineName,
       exercises: cleaned,
     });
@@ -194,19 +196,62 @@ export const getSession = query({
 
 /** Powers the routine detail trend chart: this routine's most recent
  * sessions, newest first, bounded so a routine logged for years doesn't
- * turn into an unbounded read. */
+ * turn into an unbounded read.
+ *
+ * Matches strictly by `routineId` — never by name — so two routines that
+ * happen to share a name are always fully independent: each has its own
+ * id, its own sessions, and no cross-contamination. Sessions logged before
+ * `routineId` existed are backfilled once via `backfillRoutineIds` below;
+ * this query doesn't fall back to name matching for them. */
 export const getRoutineSessions = query({
-  args: { routineName: v.string() },
-  handler: async (ctx, { routineName }) => {
+  args: { routineId: v.id("routines") },
+  handler: async (ctx, { routineId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return [];
     return ctx.db
       .query("sessions")
-      .withIndex("by_user_routineName", (q) =>
-        q.eq("userId", userId).eq("routineName", routineName)
+      .withIndex("by_user_routineId", (q) =>
+        q.eq("userId", userId).eq("routineId", routineId)
       )
       .order("desc")
       .take(50);
+  },
+});
+
+/** One-time migration: before `routineId` existed, a session's only link to
+ * a routine was its `routineName` text, which is exactly what let two
+ * different routines with the same name inherit each other's history. This
+ * assigns each such legacy session to whichever of that user's same-named
+ * routines already existed when the session was logged (the most recently
+ * created one with `createdAt <= session.ts`), so the routine that was
+ * actually around at the time keeps its real history — and a routine
+ * created later, with the same name, gets none of it. Idempotent: already
+ * backfilled sessions and sessions with no matching routine are skipped.
+ * Run once from the CLI: `npx convex run logging:backfillRoutineIds`. */
+export const backfillRoutineIds = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const [sessions, routines] = await Promise.all([
+      ctx.db.query("sessions").collect(),
+      ctx.db.query("routines").collect(),
+    ]);
+    const routinesByUser = new Map<Id<"users">, typeof routines>();
+    for (const routine of routines) {
+      const list = routinesByUser.get(routine.userId);
+      if (list) list.push(routine);
+      else routinesByUser.set(routine.userId, [routine]);
+    }
+    let updated = 0;
+    for (const session of sessions) {
+      if (session.routineId !== undefined || !session.routineName) continue;
+      const owner = (routinesByUser.get(session.userId) ?? [])
+        .filter((r) => r.name === session.routineName && r.createdAt <= session.ts)
+        .sort((a, b) => b.createdAt - a.createdAt)[0];
+      if (!owner) continue;
+      await ctx.db.patch(session._id, { routineId: owner._id });
+      updated++;
+    }
+    return { updated };
   },
 });
 

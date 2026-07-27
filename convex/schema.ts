@@ -59,6 +59,14 @@ export default defineSchema({
     ts: v.number(),
     durationSec: v.number(),
     notes: v.optional(v.string()),
+    // The routine this session was logged from, by id — the source of
+    // truth for "which routine's history is this" so two different
+    // routines that happen to share a name never get credited with each
+    // other's sessions. `routineName` is kept alongside it as a plain
+    // display label (and as the join key `backfillRoutineIds` in
+    // logging.ts used once to populate `routineId` on sessions logged
+    // before this field existed).
+    routineId: v.optional(v.id("routines")),
     routineName: v.optional(v.string()),
     exercises: v.optional(v.array(loggedExercise)),
     cardioType: v.optional(v.string()),
@@ -66,7 +74,7 @@ export default defineSchema({
     intensity: v.optional(v.string()),
   })
     .index("by_user_ts", ["userId", "ts"])
-    .index("by_user_routineName", ["userId", "routineName"]),
+    .index("by_user_routineId", ["userId", "routineId"]),
 
   // --- logging: denormalized per-user counters (kept in sync on both
   // insert and delete of a session — see logging.ts — since per Convex
