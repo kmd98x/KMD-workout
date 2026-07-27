@@ -149,23 +149,24 @@ export const CARDIO: string[] = [
 
 export type MuscleGroup = { id: string; label: string };
 
-/** The 15 fine-grained muscles a user can assign a custom exercise to. */
+/** The 15 fine-grained muscles a user can assign a custom exercise to,
+ * ordered alphabetically by label for display. */
 export const MUSCLE_GROUPS: MuscleGroup[] = [
-  { id: "chest", label: "Chest" },
-  { id: "shoulders_side", label: "Shoulders" },
-  { id: "biceps", label: "Biceps" },
-  { id: "triceps", label: "Triceps" },
-  { id: "lats", label: "Lats" },
-  { id: "upper_back", label: "Upper back" },
-  { id: "lower_back", label: "Lower back" },
-  { id: "traps", label: "Traps" },
-  { id: "forearms", label: "Forearms" },
   { id: "abs", label: "Abs / core" },
-  { id: "obliques", label: "Obliques" },
-  { id: "glutes", label: "Glutes" },
-  { id: "quadriceps", label: "Quads" },
-  { id: "hamstrings", label: "Hamstrings" },
+  { id: "biceps", label: "Biceps" },
   { id: "calves", label: "Calves" },
+  { id: "chest", label: "Chest" },
+  { id: "forearms", label: "Forearms" },
+  { id: "glutes", label: "Glutes" },
+  { id: "hamstrings", label: "Hamstrings" },
+  { id: "lats", label: "Lats" },
+  { id: "lower_back", label: "Lower back" },
+  { id: "obliques", label: "Obliques" },
+  { id: "quadriceps", label: "Quads" },
+  { id: "shoulders_side", label: "Shoulders" },
+  { id: "traps", label: "Traps" },
+  { id: "triceps", label: "Triceps" },
+  { id: "upper_back", label: "Upper back" },
 ];
 
 /** All 19 fine-grained muscle ids (superset of MUSCLE_GROUPS, includes
