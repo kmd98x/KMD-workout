@@ -1,13 +1,11 @@
 import { greeting } from "@/shared/lib/date";
 import { Skeleton } from "@/shared/ui/Skeleton";
-import { WeekStrip } from "./WeekStrip";
+import { MonthOverview } from "./MonthOverview";
 
 export function GreetingHeader({
   sessionsThisWeek,
-  doneDays,
 }: {
   sessionsThisWeek: number | undefined;
-  doneDays: Set<string>;
 }) {
   const sub =
     sessionsThisWeek === undefined
@@ -26,7 +24,7 @@ export function GreetingHeader({
       ) : (
         <p className="mt-1 text-sm text-muted">{sub}</p>
       )}
-      <WeekStrip doneDays={doneDays} />
+      <MonthOverview />
     </div>
   );
 }

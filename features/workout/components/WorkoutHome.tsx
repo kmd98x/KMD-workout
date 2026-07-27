@@ -49,10 +49,7 @@ export function WorkoutHome({
 
       <div className="lg:grid lg:grid-cols-[360px_1fr] lg:items-start lg:gap-6 xl:grid-cols-[380px_1fr]">
         <div>
-          <GreetingHeader
-            sessionsThisWeek={weekSummary?.count}
-            doneDays={new Set(weekSummary?.days ?? [])}
-          />
+          <GreetingHeader sessionsThisWeek={weekSummary?.count} />
           <div className="mt-2">
             <QuickStartButton
               onClick={() => {
