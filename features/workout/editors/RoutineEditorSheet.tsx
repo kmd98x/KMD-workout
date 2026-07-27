@@ -65,6 +65,15 @@ export function RoutineEditorSheet({
       exercises: d.exercises.filter((_, i) => i !== index),
     }));
   }
+  function moveExercise(index: number, direction: -1 | 1) {
+    setDraft((d) => {
+      const target = index + direction;
+      if (target < 0 || target >= d.exercises.length) return d;
+      const exercises = [...d.exercises];
+      [exercises[index], exercises[target]] = [exercises[target], exercises[index]];
+      return { ...d, exercises };
+    });
+  }
   function openPicker() {
     push(
       "exercise-picker",
@@ -169,11 +178,14 @@ export function RoutineEditorSheet({
           key={i}
           exercise={ex}
           mode="routine"
+          position={{ index: i, total: draft.exercises.length }}
           onChange={(next) => updateExercise(i, next)}
           onRemove={() => removeExercise(i)}
           onOpenDetail={() =>
             push("exercise-detail", <ExerciseDetailTabs name={ex.name} onBack={pop} />)
           }
+          onMoveUp={i > 0 ? () => moveExercise(i, -1) : undefined}
+          onMoveDown={i < draft.exercises.length - 1 ? () => moveExercise(i, 1) : undefined}
         />
       ))}
 

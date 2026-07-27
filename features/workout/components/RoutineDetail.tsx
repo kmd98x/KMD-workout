@@ -100,6 +100,9 @@ export function RoutineDetail({
             onClick={() => router.push(`/exercises/${encodeURIComponent(ex.name)}`)}
             className="mb-2 flex items-center gap-3"
           >
+            <span className="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full bg-surface-2 text-[11px] font-bold text-muted-2">
+              {i + 1}
+            </span>
             <ExerciseThumb name={ex.name} />
             <span className="text-[16.5px] font-bold tracking-tight text-blue">
               {ex.name}
