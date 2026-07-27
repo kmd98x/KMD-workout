@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { ExerciseDetailTabs } from "@/features/exercises/components/ExerciseDetailTabs";
@@ -65,15 +65,83 @@ export function RoutineEditorSheet({
       exercises: d.exercises.filter((_, i) => i !== index),
     }));
   }
-  function moveExercise(index: number, direction: -1 | 1) {
-    setDraft((d) => {
-      const target = index + direction;
-      if (target < 0 || target >= d.exercises.length) return d;
-      const exercises = [...d.exercises];
-      [exercises[index], exercises[target]] = [exercises[target], exercises[index]];
-      return { ...d, exercises };
-    });
+  // --- drag to reorder ---
+  // A from-scratch pointer-driven reorder (no dnd library in this project):
+  // press the grip handle to pick up a row, which collapses it to just its
+  // header; each pointermove measures where the row's center now sits
+  // relative to its siblings' current rects and, if it has crossed into a
+  // neighbor's slot, splices it into that position live; releasing the
+  // pointer just lets go — the array is already in its final order.
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+  const dragInfoRef = useRef<{ index: number; startY: number } | null>(null);
+  const exercisesRef = useRef(draft.exercises);
+  const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    exercisesRef.current = draft.exercises;
+  }, [draft.exercises]);
+
+  // Stable listener pair so add/removeEventListener always target the same
+  // function identities. Built once in an effect (not during render, and
+  // not via useCallback — each closes over the other for cleanup, which
+  // needs both to exist before either is referenced).
+  const dragListeners = useRef<{ move: (e: PointerEvent) => void; up: () => void } | null>(null);
+  useEffect(() => {
+    const move = (e: PointerEvent) => {
+      const info = dragInfoRef.current;
+      if (!info) return;
+      setDragOffsetY(e.clientY - info.startY);
+
+      const draggedEl = rowRefs.current[info.index];
+      if (!draggedEl) return;
+      const draggedRect = draggedEl.getBoundingClientRect();
+      const draggedCenter = draggedRect.top + draggedRect.height / 2;
+
+      const exercises = exercisesRef.current;
+      let targetIndex = 0;
+      for (let j = 0; j < exercises.length; j++) {
+        if (j === info.index) continue;
+        const el = rowRefs.current[j];
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        if (rect.top + rect.height / 2 < draggedCenter) targetIndex++;
+      }
+      if (targetIndex === info.index) return;
+
+      const next = [...exercises];
+      const [moved] = next.splice(info.index, 1);
+      next.splice(targetIndex, 0, moved);
+      exercisesRef.current = next;
+      dragInfoRef.current = { index: targetIndex, startY: e.clientY };
+      setDragIndex(targetIndex);
+      setDragOffsetY(0);
+      setDraft((d) => ({ ...d, exercises: next }));
+    };
+    const up = () => {
+      dragInfoRef.current = null;
+      setDragIndex(null);
+      setDragOffsetY(0);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    dragListeners.current = { move, up };
+    return () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+  }, []);
+
+  function handleDragHandlePointerDown(e: React.PointerEvent, index: number) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    e.preventDefault();
+    dragInfoRef.current = { index, startY: e.clientY };
+    setDragIndex(index);
+    setDragOffsetY(0);
+    window.addEventListener("pointermove", dragListeners.current!.move);
+    window.addEventListener("pointerup", dragListeners.current!.up);
   }
+
   function openPicker() {
     push(
       "exercise-picker",
@@ -176,16 +244,20 @@ export function RoutineEditorSheet({
       {draft.exercises.map((ex, i) => (
         <SetBlock
           key={i}
+          ref={(el) => {
+            rowRefs.current[i] = el;
+          }}
           exercise={ex}
           mode="routine"
-          position={{ index: i, total: draft.exercises.length }}
+          position={{ index: i }}
           onChange={(next) => updateExercise(i, next)}
           onRemove={() => removeExercise(i)}
           onOpenDetail={() =>
             push("exercise-detail", <ExerciseDetailTabs name={ex.name} onBack={pop} />)
           }
-          onMoveUp={i > 0 ? () => moveExercise(i, -1) : undefined}
-          onMoveDown={i < draft.exercises.length - 1 ? () => moveExercise(i, 1) : undefined}
+          onDragHandlePointerDown={(e) => handleDragHandlePointerDown(e, i)}
+          dragging={dragIndex === i}
+          dragOffsetY={dragIndex === i ? dragOffsetY : undefined}
         />
       ))}
 
