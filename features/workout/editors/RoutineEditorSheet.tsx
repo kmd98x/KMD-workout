@@ -133,6 +133,7 @@ export function RoutineEditorSheet({
   }, []);
 
   function handleDragHandlePointerDown(e: React.PointerEvent, index: number) {
+    if (dragInfoRef.current) return;
     if (e.pointerType === "mouse" && e.button !== 0) return;
     e.preventDefault();
     dragInfoRef.current = { index, startY: e.clientY };
@@ -256,6 +257,7 @@ export function RoutineEditorSheet({
             push("exercise-detail", <ExerciseDetailTabs name={ex.name} onBack={pop} />)
           }
           onDragHandlePointerDown={(e) => handleDragHandlePointerDown(e, i)}
+          collapsed={dragIndex !== null}
           dragging={dragIndex === i}
           dragOffsetY={dragIndex === i ? dragOffsetY : undefined}
         />

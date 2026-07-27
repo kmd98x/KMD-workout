@@ -49,8 +49,14 @@ export const SetBlock = forwardRef<
     /** Press-and-hold the grip handle to start dragging this row to
      * reorder it. Presence of this prop is what shows the handle. */
     onDragHandlePointerDown?: (e: React.PointerEvent) => void;
-    /** True while this row is the one currently being dragged — collapses
-     * it to just the header and lifts it above its siblings. */
+    /** True for every row while a reorder is in progress anywhere in the
+     * list — collapses each row to just its header so all rows share a
+     * uniform height, which keeps the drag math (and the dragged row's
+     * position under the pointer) exact regardless of how many sets each
+     * exercise has. */
+    collapsed?: boolean;
+    /** True while this row is the one currently being dragged — lifts it
+     * above its siblings and applies the drag transform. */
     dragging?: boolean;
     /** Pixel offset applied via transform while dragging, so the row
      * visually follows the pointer. */
@@ -66,6 +72,7 @@ export const SetBlock = forwardRef<
     onRemove,
     onOpenDetail,
     onDragHandlePointerDown,
+    collapsed,
     dragging,
     dragOffsetY,
   },
@@ -157,7 +164,7 @@ export const SetBlock = forwardRef<
         </button>
       </div>
 
-      {!dragging && mode === "log" && (
+      {!collapsed && mode === "log" && (
         <textarea
           rows={1}
           placeholder="Add notes here…"
@@ -167,7 +174,7 @@ export const SetBlock = forwardRef<
         />
       )}
 
-      {!dragging && (exercise.cardio ? (
+      {!collapsed && (exercise.cardio ? (
         <>
           <div className="mb-1.5 grid grid-cols-[24px_1fr_32px] gap-2 px-0.5 text-[10.5px] font-bold uppercase tracking-wide text-muted-2">
             <span className="text-center">Set</span>
@@ -297,7 +304,7 @@ export const SetBlock = forwardRef<
         </>
       ))}
 
-      {!dragging && (
+      {!collapsed && (
         <button
           type="button"
           onClick={addSet}
