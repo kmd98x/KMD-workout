@@ -309,28 +309,27 @@ export const getThisWeekSummary = query({
   },
 });
 
-/** Same shape as `getThisWeekSummary`, bounded to a calendar month instead
- * of a week — powers the Workout home screen's month overview. Months
- * aren't a fixed number of ms like weeks, so the exclusive end is derived
- * from `monthStartTs` itself (first of the following month) rather than
- * passed in. */
+/** Bounded to a calendar month instead of a week — powers the Workout home
+ * screen's month overview. Unlike `getThisWeekSummary`, both ends of the
+ * range come from the client rather than being derived from `monthStartTs`
+ * on the server: Convex functions run in UTC, so reconstructing a `Date`
+ * from a client-local timestamp and calling `.getFullYear()`/`.getMonth()`
+ * here would re-read it in the wrong timezone (e.g. "midnight on the 1st"
+ * in CEST lands on "10pm on the 30th" in UTC). Same reasoning applies to
+ * each session's day: return the raw timestamps and let the client turn
+ * them into day keys with its own local clock, the same one it uses to
+ * label the calendar cells. */
 export const getMonthSummary = query({
-  args: { monthStartTs: v.number() },
-  handler: async (ctx, { monthStartTs }) => {
+  args: { monthStartTs: v.number(), monthEndTs: v.number() },
+  handler: async (ctx, { monthStartTs, monthEndTs }) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) return { count: 0, days: [] as string[] };
-    const start = new Date(monthStartTs);
-    const monthEndTs = new Date(start.getFullYear(), start.getMonth() + 1, 1).getTime();
+    if (!userId) return { count: 0, sessionTs: [] as number[] };
     const sessions = await ctx.db
       .query("sessions")
       .withIndex("by_user_ts", (q) =>
         q.eq("userId", userId).gte("ts", monthStartTs).lt("ts", monthEndTs)
       )
       .collect();
-    const days = sessions.map((s) => {
-      const d = new Date(s.ts);
-      return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-    });
-    return { count: sessions.length, days };
+    return { count: sessions.length, sessionTs: sessions.map((s) => s.ts) };
   },
 });
