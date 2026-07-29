@@ -24,15 +24,21 @@ export function MonthGrid({
 
   return (
     <div>
-      <div className="grid grid-cols-7 pb-1.5 text-center text-[10.5px] font-bold uppercase tracking-wide text-muted-2">
+      <div
+        style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))" }}
+        className="pb-1.5 text-center text-[10.5px] font-bold uppercase tracking-wide text-muted-2"
+      >
         {DAY_LABELS.map((label, i) => (
           <span key={i}>{label}</span>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-y-1.5">
+      <div
+        style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))" }}
+        className="gap-y-1.5 gap-x-1.5"
+      >
         {cells.map((day, i) => {
           if (day === null) return <div key={i} />;
-          const key = `${monthStart.getFullYear()}-${monthStart.getMonth() + 1}-${day}`;
+          const key = todayKey(new Date(monthStart.getFullYear(), monthStart.getMonth(), day));
           const done = doneDays.has(key);
           const isToday = key === today;
           return (
