@@ -12,6 +12,7 @@ import {
 import { Sheet } from "@/shared/ui/Sheet";
 import { ChevronUpIcon, StrengthIcon } from "@/shared/ui/icons";
 import { ElapsedTimer } from "../components/ElapsedTimer";
+import { clearWorkoutDraft } from "../lib/workoutDraft";
 
 type ActiveWorkoutMeta = { title: string; startTs: number };
 
@@ -63,6 +64,7 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
   const restore = useCallback(() => setIsMinimized(false), []);
 
   const end = useCallback(() => {
+    clearWorkoutDraft();
     setMeta(null);
     setContent(null);
     setIsMinimized(false);

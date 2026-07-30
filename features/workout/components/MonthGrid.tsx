@@ -34,7 +34,7 @@ export function MonthGrid({
       </div>
       <div
         style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))" }}
-        className="gap-y-1.5 gap-x-1.5"
+        className="gap-y-4 gap-x-0"
       >
         {cells.map((day, i) => {
           if (day === null) return <div key={i} />;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { ExerciseDetailTabs } from "@/features/exercises/components/ExerciseDetailTabs";
@@ -15,6 +15,7 @@ import { SetBlock, type DraftExercise, type DraftSet } from "@/shared/ui/SetBloc
 import { SheetHeader } from "@/shared/ui/SheetHeader";
 import { useSheet } from "@/shared/ui/SheetHost";
 import { useActiveWorkout } from "../context/ActiveWorkoutContext";
+import { clearWorkoutDraft, saveWorkoutDraft } from "../lib/workoutDraft";
 import { ElapsedTimer } from "./ElapsedTimer";
 import { WorkoutSummaryScreen } from "./WorkoutSummaryScreen";
 
@@ -34,11 +35,15 @@ function hasIncompleteData(ex: DraftExercise, s: DraftSet): boolean {
 
 export function ActiveStrengthScreen({
   initialExercises,
+  initialNotes,
   routineId,
   routineName,
   startTs,
 }: {
   initialExercises: DraftExercise[];
+  /** Prefills the notes field when resuming a workout draft restored from
+   * localStorage after a full reload; omitted on a fresh start. */
+  initialNotes?: string;
   routineId?: Id<"routines">;
   routineName?: string;
   /** Generated once by the caller when it starts this workout via
@@ -54,13 +59,21 @@ export function ActiveStrengthScreen({
 
   const [exercises, setExercises] = useState<DraftExercise[]>(initialExercises);
   const [phase, setPhase] = useState<"log" | "summary">("log");
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState(initialNotes ?? "");
   const [sessionId, setSessionId] = useState<Id<"sessions"> | null>(null);
   const [confirmFinish, setConfirmFinish] = useState(false);
   const [finishing, setFinishing] = useState(false);
   // Snapshotted once at "Finish" so the summary's displayed duration and the
   // saved duration always match, instead of drifting if the user lingers.
   const [finishedDurationSec, setFinishedDurationSec] = useState(0);
+
+  // Back up the in-progress workout to localStorage as it changes, so a
+  // full reload/relaunch (e.g. the PWA getting killed mid-workout) doesn't
+  // silently wipe unsaved sets — only in-memory React state did before.
+  useEffect(() => {
+    if (phase !== "log") return;
+    saveWorkoutDraft({ kind: "strength", routineId, routineName, startTs, exercises, notes });
+  }, [phase, routineId, routineName, startTs, exercises, notes]);
 
   function updateExercise(i: number, next: DraftExercise) {
     setExercises((exs) => exs.map((ex, idx) => (idx === i ? next : ex)));
@@ -87,6 +100,7 @@ export function ActiveStrengthScreen({
       .map((ex) => ({ ...ex, sets: ex.sets.filter(hasValue) }))
       .filter((ex) => ex.sets.length > 0);
     if (cleaned.length === 0) {
+      clearWorkoutDraft();
       end();
       return;
     }
@@ -99,6 +113,7 @@ export function ActiveStrengthScreen({
       durationSec,
       ts: startTs,
     });
+    clearWorkoutDraft();
     setExercises(cleaned);
     setFinishedDurationSec(durationSec);
     setSessionId(id);
