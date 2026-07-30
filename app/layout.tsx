@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { Geist, Geist_Mono } from "next/font/google";
+import { WorkoutDraftRestorer } from "@/features/logging/components/WorkoutDraftRestorer";
 import { ActiveWorkoutProvider } from "@/features/logging/context/ActiveWorkoutContext";
 import { BottomNav } from "@/shared/ui/BottomNav";
 import { ConvexClientProvider } from "@/shared/ui/ConvexClientProvider";
@@ -57,6 +58,7 @@ export default function RootLayout({
 					<ConvexClientProvider>
 						<SheetHost>
 							<ActiveWorkoutProvider>
+								<WorkoutDraftRestorer />
 								<div className="mx-auto w-full max-w-130 px-4.5 pt-5 pb-30 md:max-w-180 lg:max-w-250 xl:max-w-280">
 									{children}
 								</div>
